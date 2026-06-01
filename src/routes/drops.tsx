@@ -902,7 +902,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       queryClient.invalidateQueries({ queryKey: ["drops"] });
       onOpenChange(false);
       // Reset form
-      setDropData({ name: "", description: "", image_url: "", link: "" });
+      setDropData({ name: "", description: "", image_url: "", link: "", source: "" });
       setPieces([{ 
         name: "", 
         image_url: "", 
