@@ -762,9 +762,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
   const [stlflixUrl, setStlflixUrl] = useState("");
-  const [pastedHtml, setPastedHtml] = useState("");
-  const [stlflixGallery, setStlflixGallery] = useState<string[]>([]);
-  const [stlflixDropTitle, setStlflixDropTitle] = useState("");
+
 
   
   const [dropData, setDropData] = useState({
@@ -844,73 +842,6 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
     setPieces(newPieces);
   };
 
-  const handleExtractSTLFLIX = () => {
-    if (!pastedHtml) {
-      toast.error("Cole o código-fonte da página");
-      return;
-    }
-
-    try {
-      const scriptTag = pastedHtml.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-      if (!scriptTag) {
-        toast.error("Não foi possível encontrar o bloco de dados no código colado. Certifique-se de copiar o código-fonte completo (CTRL+U).");
-        return;
-      }
-
-      const jsonData = JSON.parse(scriptTag[1]);
-      const product = jsonData.props?.pageProps?.product;
-
-      if (!product) {
-        toast.error("Dados da peça não encontrados no JSON.");
-        return;
-      }
-
-      const name = product.name || "";
-      const stlCode = product.id ? `#${product.id}` : "";
-      const description = (product.description || "").replace(/<[^>]*>/g, ' ');
-      const thumbnail = product.thumbnail?.data?.attributes?.url || "";
-      const gallery = product.gallery?.data?.map((item: any) => item.attributes.url).filter(Boolean) || [];
-      const dropTitle = product.drop?.data?.attributes?.title || "";
-
-      // Regex extraction
-      const monoMatch = description.match(/Monocolor:\s*([^\n<]*)/i);
-      const multiMatch = description.match(/Multiparts:\s*([^\n<]*)/i);
-      const heightMatch = description.match(/Altura:\s*([^\n<]*)/i);
-
-      const monoTime = monoMatch ? monoMatch[1].trim() : "";
-      const multiTime = multiMatch ? multiMatch[1].trim() : "";
-      const height = heightMatch ? heightMatch[1].trim() : "";
-
-      setDropData(prev => ({
-        ...prev,
-        name: name,
-        image_url: thumbnail,
-        link: stlflixUrl,
-        source: 'stlflix_import'
-      }));
-
-      setPieces([{
-        ...pieces[0],
-        name: name,
-        image_url: thumbnail,
-        piece_url: stlflixUrl,
-        available_as: "ambos",
-        full_description: description.trim(),
-        stlflix_code: stlCode,
-        print_time_mono: monoTime,
-        print_time_multi: multiTime,
-        height_cm: height,
-        source: 'stlflix_import'
-      }]);
-
-      setStlflixGallery(gallery.slice(0, 3));
-      setStlflixDropTitle(dropTitle);
-      toast.success("✓ Dados extraídos com sucesso");
-    } catch (error) {
-      console.error("Extraction error:", error);
-      toast.error("Erro ao processar os dados. Verifique se o código colado está correto.");
-    }
-  };
 
 
   const handleSave = async () => {
@@ -1053,68 +984,29 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
           </TabsList>
 
           <TabsContent value="import" className="space-y-6">
-            <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label>Link da peça na STLFLIX</Label>
                 <Input 
-                  placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
+                  placeholder="https://platform.stlflix.com/product/nome-da-peca" 
                   value={stlflixUrl}
-                  onChange={e => setStlflixUrl(e.target.value)}
+                  onChange={e => {
+                    setStlflixUrl(e.target.value);
+                    setDropData({...dropData, link: e.target.value});
+                    updatePiece(0, 'piece_url', e.target.value);
+                  }}
                 />
-                {stlflixDropTitle && (
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Drop: <span className="font-medium">{stlflixDropTitle}</span>
+              </div>
+
+              <Card className="bg-blue-50 border-blue-200 shadow-none">
+                <CardContent className="p-4 flex items-center gap-3">
+                  <Zap className="h-5 w-5 text-orange-500 fill-orange-500 shrink-0" />
+                  <p className="text-sm text-blue-800">
+                    Cole o link acima e envie para o Claude no chat. 
+                    Ele importará os dados automaticamente usando o Claude in Chrome.
                   </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Cole o código-fonte da página</Label>
-                <div className="flex gap-2">
-                  <Textarea 
-                    placeholder="Abra a página no STLFLIX → ⌘+Option+U → ⌘+A → ⌘+C → cole aqui"
-                    className="min-h-[100px] text-[10px] font-mono"
-                    value={pastedHtml}
-                    onChange={e => setPastedHtml(e.target.value)}
-                    rows={6}
-                  />
-                  <Button 
-                    className="bg-blue-600 hover:bg-blue-700 shrink-0 self-end" 
-                    onClick={handleExtractSTLFLIX}
-                  >
-                    Extrair dados
-                  </Button>
-                </div>
-                <p className="text-[11px] text-blue-600 font-medium">
-                  Abra a página da peça no navegador, use o atalho para ver o código-fonte (CTRL+U ou CMD+OPTION+U) e cole todo o conteúdo acima para preencher automaticamente.
-                </p>
-              </div>
-
-              {stlflixGallery.length > 0 && (
-                <div className="space-y-2">
-                  <Label className="text-xs">Escolha a imagem principal:</Label>
-                  <div className="flex gap-2">
-                    {stlflixGallery.map((url, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className={`relative w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${dropData.image_url === url ? 'border-primary' : 'border-transparent'}`}
-                        onClick={() => {
-                          setDropData({ ...dropData, image_url: url });
-                          updatePiece(0, 'image_url', url);
-                        }}
-                      >
-                        <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
-                        {dropData.image_url === url && (
-                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                            <CheckCircle2 className="h-6 w-6 text-primary shadow-sm" />
-                          </div>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
+                </CardContent>
+              </Card>
             </div>
 
 
@@ -1232,7 +1124,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                   disabled={isLoading} 
                   className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
                 >
-                  {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
+                  {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop manualmente"}
                 </Button>
               </div>
             </div>
