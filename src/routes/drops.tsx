@@ -777,14 +777,13 @@ function PublicationDialog({ piece, disabled }: { piece: any, disabled: boolean 
       const { data: drop } = await supabase.from('drops').select('description').eq('id', piece.drop_id).single();
       
       const result = await generateCopyFn({
-        data: {
-          piece_name: piece.name,
-          drop_description: drop?.description || "",
-          price_figura: piece.price_figura ? Number(piece.price_figura) : null,
-          price_chaveiro: piece.price_chaveiro ? Number(piece.price_chaveiro) : null,
-          available_as: piece.available_as
-        }
+        piece_name: piece.name,
+        drop_description: drop?.description || "",
+        price_figura: piece.price_figura ? Number(piece.price_figura) : null,
+        price_chaveiro: piece.price_chaveiro ? Number(piece.price_chaveiro) : null,
+        available_as: piece.available_as
       });
+
       
       setAiData(result);
       setStep('review');
