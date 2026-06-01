@@ -1038,151 +1038,139 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
               <div className="space-y-2">
                 <Label>Link da peça na STLFLIX</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
-                    value={stlflixUrl}
-                    onChange={e => setStlflixUrl(e.target.value)}
-                  />
-                  <Button 
-                    className="bg-blue-600 hover:bg-blue-700 shrink-0" 
-                    onClick={handleScrape}
-                    disabled={isScraping}
-                  >
-                    {isScraping ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Download className="h-4 w-4 mr-2" />
-                    )}
-                    Importar
-                  </Button>
-                </div>
+                <Input 
+                  placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
+                  value={stlflixUrl}
+                  onChange={e => {
+                    setStlflixUrl(e.target.value);
+                    setDropData(prev => ({ ...prev, link: e.target.value, source: 'stlflix_import' }));
+                    updatePiece(0, 'piece_url', e.target.value);
+                    updatePiece(0, 'source', 'stlflix_import');
+                  }}
+                />
+                <p className="text-[11px] text-blue-600 font-medium">
+                  Cole o link da peça para referência. Os dados precisam ser preenchidos manualmente pois a STLFLIX requer login.
+                </p>
               </div>
             </div>
 
-            {pieces[0]?.source === 'stlflix_import' && (
-              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                <div className="grid gap-4">
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label>Nome da peça *</Label>
+                  <Input 
+                    placeholder="Nome da peça"
+                    value={dropData.name}
+                    onChange={e => {
+                      setDropData({...dropData, name: e.target.value});
+                      updatePiece(0, 'name', e.target.value);
+                    }}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Nome da peça *</Label>
+                    <Label>Código STL</Label>
+                    <div className="relative">
+                      <Input 
+                        placeholder="#4095"
+                        value={pieces[0].stlflix_code}
+                        onChange={e => updatePiece(0, 'stlflix_code', e.target.value)}
+                        className="pr-10"
+                      />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                        onClick={() => {
+                          if (pieces[0].stlflix_code) {
+                            navigator.clipboard.writeText(pieces[0].stlflix_code);
+                            toast.success("Copiado!");
+                          }
+                        }}
+                      >
+                        <Copy className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>URL da imagem</Label>
                     <Input 
-                      value={dropData.name}
+                      placeholder="https://..."
+                      value={dropData.image_url}
                       onChange={e => {
-                        setDropData({...dropData, name: e.target.value});
-                        updatePiece(0, 'name', e.target.value);
+                        setDropData({...dropData, image_url: e.target.value});
+                        updatePiece(0, 'image_url', e.target.value);
                       }}
                     />
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Código STL</Label>
-                      <div className="relative">
-                        <Input 
-                          value={pieces[0].stlflix_code}
-                          readOnly
-                          className="pr-10 bg-muted/50"
-                        />
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
-                          onClick={() => {
-                            navigator.clipboard.writeText(pieces[0].stlflix_code);
-                            toast.success("Copiado!");
-                          }}
-                        >
-                          <Copy className="h-4 w-4 text-muted-foreground" />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>URL da imagem</Label>
-                      <Input 
-                        value={dropData.image_url}
-                        onChange={e => {
-                          setDropData({...dropData, image_url: e.target.value});
-                          updatePiece(0, 'image_url', e.target.value);
-                        }}
-                      />
-                    </div>
-                  </div>
+                </div>
 
+                <div className="space-y-2">
+                  <Label>Descrição da peça</Label>
+                  <Textarea 
+                    className="min-h-[120px]"
+                    placeholder="Descrição da peça..."
+                    value={pieces[0].full_description}
+                    onChange={e => updatePiece(0, 'full_description', e.target.value)}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Descrição completa</Label>
-                    <Textarea 
-                      className="min-h-[120px]"
-                      value={pieces[0].full_description}
-                      onChange={e => updatePiece(0, 'full_description', e.target.value)}
+                    <Label className="text-xs">Tempo Mono</Label>
+                    <Input 
+                      placeholder="Ex: 5h 30m" 
+                      value={pieces[0].print_time_mono}
+                      onChange={e => updatePiece(0, 'print_time_mono', e.target.value)}
                     />
                   </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-xs">Tempo Mono</Label>
-                      <Input 
-                        placeholder="Ex: 5h 30m" 
-                        value={pieces[0].print_time_mono}
-                        onChange={e => updatePiece(0, 'print_time_mono', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs">Tempo Multi</Label>
-                      <Input 
-                        placeholder="Ex: 12h 15m" 
-                        value={pieces[0].print_time_multi}
-                        onChange={e => updatePiece(0, 'print_time_multi', e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs">Altura (cm)</Label>
-                      <Input 
-                        placeholder="Ex: 15cm" 
-                        value={pieces[0].height_cm}
-                        onChange={e => updatePiece(0, 'height_cm', e.target.value)}
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Tempo Multi</Label>
+                    <Input 
+                      placeholder="Ex: 12h 15m" 
+                      value={pieces[0].print_time_multi}
+                      onChange={e => updatePiece(0, 'print_time_multi', e.target.value)}
+                    />
                   </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Link STLFLIX</Label>
-                      <Input 
-                        value={dropData.link}
-                        readOnly
-                        className="bg-muted/50"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Disponível como</Label>
-                      <Select 
-                        value={pieces[0].available_as} 
-                        onValueChange={val => updatePiece(0, 'available_as', val)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="figura">Figura</SelectItem>
-                          <SelectItem value="chaveiro">Chaveiro</SelectItem>
-                          <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs">Altura (cm)</Label>
+                    <Input 
+                      placeholder="Ex: 15cm" 
+                      value={pieces[0].height_cm}
+                      onChange={e => updatePiece(0, 'height_cm', e.target.value)}
+                    />
                   </div>
                 </div>
 
-                <div className="pt-4 border-t">
-                  <Button 
-                    onClick={handleSave} 
-                    disabled={isLoading} 
-                    className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
+                <div className="space-y-2">
+                  <Label>Disponível como</Label>
+                  <Select 
+                    value={pieces[0].available_as} 
+                    onValueChange={val => updatePiece(0, 'available_as', val)}
                   >
-                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
-                  </Button>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="figura">Figura</SelectItem>
+                      <SelectItem value="chaveiro">Chaveiro</SelectItem>
+                      <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
-            )}
+
+              <div className="pt-4 border-t">
+                <Button 
+                  onClick={handleSave} 
+                  disabled={isLoading} 
+                  className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
+                >
+                  {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
+                </Button>
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="drive" className="space-y-6">
