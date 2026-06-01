@@ -1405,6 +1405,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                 </div>
               </div>
             )}
+          </TabsContent>
 
           <TabsContent value="manual" className="space-y-6">
             <div className="grid gap-4">
