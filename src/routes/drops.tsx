@@ -51,7 +51,7 @@ export default function DropsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: drops, isLoading: isLoadingDrops } = useQuery({
+  const { data: drops, isLoading: isLoadingDrops, isError: isErrorDrops, error: errorDrops } = useQuery({
     queryKey: ["drops"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -65,9 +65,10 @@ export default function DropsPage() {
       if (error) throw error;
       return data;
     },
+    retry: 1,
   });
 
-  const { data: pieces, isLoading: isLoadingPieces } = useQuery({
+  const { data: pieces, isLoading: isLoadingPieces, isError: isErrorPieces, error: errorPieces } = useQuery({
     queryKey: ["pieces", selectedDropId],
     enabled: !!selectedDropId,
     queryFn: async () => {
@@ -81,7 +82,9 @@ export default function DropsPage() {
       if (error) throw error;
       return data;
     },
+    retry: 1,
   });
+
 
 
   return (
@@ -108,9 +111,11 @@ export default function DropsPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="drops" className="mt-4">
-              <DropsList 
+            <DropsList 
                 drops={drops} 
                 isLoading={isLoadingDrops} 
+                isError={isErrorDrops}
+                error={errorDrops}
                 selectedId={selectedDropId} 
                 onSelect={setSelectedDropId} 
               />
@@ -119,8 +124,11 @@ export default function DropsPage() {
               <PiecesList 
                 pieces={pieces} 
                 isLoading={isLoadingPieces} 
+                isError={isErrorPieces}
+                error={errorPieces}
                 dropId={selectedDropId} 
               />
+
             </TabsContent>
           </Tabs>
         </div>
@@ -132,6 +140,8 @@ export default function DropsPage() {
             <DropsList 
               drops={drops} 
               isLoading={isLoadingDrops} 
+              isError={isErrorDrops}
+              error={errorDrops}
               selectedId={selectedDropId} 
               onSelect={setSelectedDropId} 
             />
@@ -142,8 +152,11 @@ export default function DropsPage() {
             <PiecesList 
               pieces={pieces} 
               isLoading={isLoadingPieces} 
+              isError={isErrorPieces}
+              error={errorPieces}
               dropId={selectedDropId} 
             />
+
           </section>
         </div>
       </div>
@@ -151,7 +164,16 @@ export default function DropsPage() {
   );
 }
 
-function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
+function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: any) {
+  if (isError) {
+    return (
+      <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-xl text-center">
+        <p className="text-sm text-destructive font-medium">Erro ao carregar drops</p>
+        <p className="text-xs text-destructive/70 mt-1">{error?.message || "Erro inesperado"}</p>
+      </div>
+    );
+  }
+
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -242,7 +264,16 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
   );
 }
 
-function PiecesList({ pieces, isLoading, dropId }: any) {
+function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
+  if (isError) {
+    return (
+      <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-xl text-center">
+        <p className="text-sm text-destructive font-medium">Erro ao carregar peças</p>
+        <p className="text-xs text-destructive/70 mt-1">{error?.message || "Erro inesperado"}</p>
+      </div>
+    );
+  }
+
   if (!dropId) {
     return (
       <Card className="border-dashed py-24 flex flex-col items-center justify-center text-center space-y-4">
