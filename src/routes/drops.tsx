@@ -18,6 +18,8 @@ import {
   Clock,
   History,
   FileText,
+  MoreVertical,
+  Pencil,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
@@ -48,15 +50,31 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { generateCopyFn } from "@/lib/ai-service";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 export default function DropsPage() {
-
-
   const [selectedDropId, setSelectedDropId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingDrop, setEditingDrop] = useState<any>(null);
+  const [dropToDelete, setDropToDelete] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const { data: drops, isLoading: isLoadingDrops, isError: isErrorDrops, error: errorDrops } = useQuery({
@@ -120,8 +138,29 @@ export default function DropsPage() {
     },
   });
 
+  const handleDeleteDrop = async () => {
+    if (!dropToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('drops')
+        .delete()
+        .eq('id', dropToDelete.id);
 
+      if (error) throw error;
 
+      toast.success("✓ Drop apagado com sucesso");
+      if (selectedDropId === dropToDelete.id) {
+        setSelectedDropId(null);
+      }
+      queryClient.invalidateQueries({ queryKey: ["drops"] });
+    } catch (error: any) {
+      console.error(error);
+      toast.error(`Erro ao apagar drop: ${error.message}`);
+    } finally {
+      setDropToDelete(null);
+    }
+  };
 
   return (
     <AppShell>
@@ -133,7 +172,11 @@ export default function DropsPage() {
           </div>
           <CreateDropDialog 
             isOpen={isCreateDialogOpen} 
-            onOpenChange={setIsCreateDialogOpen} 
+            onOpenChange={(open: boolean) => {
+              setIsCreateDialogOpen(open);
+              if (!open) setEditingDrop(null);
+            }} 
+            editingDrop={editingDrop}
           />
         </header>
 
@@ -154,6 +197,11 @@ export default function DropsPage() {
                 error={errorDrops}
                 selectedId={selectedDropId} 
                 onSelect={setSelectedDropId} 
+                onEdit={(drop: any) => {
+                  setEditingDrop(drop);
+                  setIsCreateDialogOpen(true);
+                }}
+                onDelete={(drop: any) => setDropToDelete(drop)}
               />
             </TabsContent>
             <TabsContent value="pieces" className="mt-4">
@@ -172,7 +220,9 @@ export default function DropsPage() {
         {/* Desktop 2-column layout */}
         <div className="hidden lg:grid grid-cols-2 gap-8 items-start">
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold px-1">Lista de Drops</h2>
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xl font-semibold">Lista de Drops</h2>
+            </div>
             <DropsList 
               drops={drops} 
               isLoading={isLoadingDrops} 
@@ -180,6 +230,11 @@ export default function DropsPage() {
               error={errorDrops}
               selectedId={selectedDropId} 
               onSelect={setSelectedDropId} 
+              onEdit={(drop: any) => {
+                setEditingDrop(drop);
+                setIsCreateDialogOpen(true);
+              }}
+              onDelete={(drop: any) => setDropToDelete(drop)}
             />
           </section>
 
@@ -196,11 +251,28 @@ export default function DropsPage() {
           </section>
         </div>
       </div>
+
+      <AlertDialog open={!!dropToDelete} onOpenChange={(open) => !open && setDropToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza que deseja apagar este drop?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Todas as peças e listagens vinculadas a este drop também serão apagadas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteDrop} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Apagar drop
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
 
-function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: any) {
+function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onEdit, onDelete }: any) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -225,8 +297,6 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
       </div>
     );
   }
-
-
 
   if (!drops || drops.length === 0) {
     return (
@@ -299,9 +369,31 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
                         </Badge>
                       )}
                     </div>
-                    <Badge variant="outline" className={cn("shrink-0", statusColor)}>
-                      {statusLabel}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={cn("shrink-0", statusColor)}>
+                        {statusLabel}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenuItem onClick={() => onEdit(drop)} className="gap-2">
+                            <Pencil className="h-4 w-4" />
+                            Editar drop
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => onDelete(drop)} 
+                            className="gap-2 text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Apagar drop
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(drop.created_at)}
@@ -563,7 +655,7 @@ function PieceCard({ piece, index }: any) {
 }
 
 
-function CreateDropDialog({ isOpen, onOpenChange }: any) {
+function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
@@ -590,6 +682,21 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
       source: ""
     }
   ]);
+
+  useEffect(() => {
+    if (editingDrop) {
+      setDropData({
+        name: editingDrop.drop_name || "",
+        description: editingDrop.description || "",
+        image_url: editingDrop.drop_image_url || "",
+        link: editingDrop.drop_link || ""
+      });
+      // For editing, we don't show the pieces section in the same way or we keep it empty for new additions
+      // The requirement says "pré-preenchido com os dados do drop selecionado"
+    } else {
+      setDropData({ name: "", description: "", image_url: "", link: "" });
+    }
+  }, [editingDrop, isOpen]);
 
   const addPiece = () => {
     setPieces([...pieces, { 
@@ -682,48 +789,66 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
 
     setIsLoading(true);
     try {
-      // 1. Inserir Drop
-      const { data: drop, error: dropError } = await supabase
-        .from('drops')
-        .insert({
-          drop_name: dropData.name,
-          description: dropData.description,
-          drop_image_url: dropData.image_url,
-          drop_link: dropData.link,
-          source: pieces[0]?.source || 'manual'
-        })
-        .select()
-        .single();
+      if (editingDrop) {
+        // UPDATE
+        const { error } = await supabase
+          .from('drops')
+          .update({
+            drop_name: dropData.name,
+            description: dropData.description,
+            drop_image_url: dropData.image_url,
+            drop_link: dropData.link
+          })
+          .eq('id', editingDrop.id);
 
-      if (dropError) throw dropError;
+        if (error) throw error;
+        toast.success("✓ Drop atualizado com sucesso");
+      } else {
+        // INSERT
+        // 1. Inserir Drop
+        const { data: drop, error: dropError } = await supabase
+          .from('drops')
+          .insert({
+            drop_name: dropData.name,
+            description: dropData.description,
+            drop_image_url: dropData.image_url,
+            drop_link: dropData.link,
+            source: pieces[0]?.source || 'manual'
+          })
+          .select()
+          .single();
 
-      // 2. Inserir Peças
-      const validPieces = pieces
-        .filter(p => p.name.trim() !== "")
-        .map(p => ({
-          name: p.name,
-          image_url: p.image_url,
-          piece_url: p.piece_url,
-          available_as: p.available_as,
-          drop_id: drop.id,
-          full_description: p.full_description,
-          stlflix_code: p.stlflix_code,
-          stlflix_slug: p.stlflix_slug,
-          stlflix_url: p.piece_url,
-          print_time_mono: p.print_time_mono,
-          print_time_multi: p.print_time_multi,
-          height_cm: p.height_cm,
-          source: p.source || 'manual'
-        }));
+        if (dropError) throw dropError;
 
-      if (validPieces.length > 0) {
-        const { error: piecesError } = await supabase
-          .from('pieces')
-          .insert(validPieces);
-        if (piecesError) throw piecesError;
+        // 2. Inserir Peças
+        const validPieces = pieces
+          .filter(p => p.name.trim() !== "")
+          .map(p => ({
+            name: p.name,
+            image_url: p.image_url,
+            piece_url: p.piece_url,
+            available_as: p.available_as,
+            drop_id: drop.id,
+            full_description: p.full_description,
+            stlflix_code: p.stlflix_code,
+            stlflix_slug: p.stlflix_slug,
+            stlflix_url: p.piece_url,
+            print_time_mono: p.print_time_mono,
+            print_time_multi: p.print_time_multi,
+            height_cm: p.height_cm,
+            source: p.source || 'manual'
+          }));
+
+        if (validPieces.length > 0) {
+          const { error: piecesError } = await supabase
+            .from('pieces')
+            .insert(validPieces);
+          if (piecesError) throw piecesError;
+        }
+
+        toast.success("Drop criado com sucesso!");
       }
 
-      toast.success("Drop criado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["drops"] });
       onOpenChange(false);
       // Reset form
@@ -1041,7 +1166,7 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Salvar Drop"}
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : editingDrop ? "Salvar alterações" : "Salvar Drop"}
               </Button>
             </DialogFooter>
           </TabsContent>
