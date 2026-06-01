@@ -715,7 +715,11 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       print_time_mono: "",
       print_time_multi: "",
       height_cm: "",
-      source: ""
+      source: "",
+      drive_url: "",
+      material: "",
+      print_notes: "",
+      print_time_estimated: ""
     }
   ]);
 
