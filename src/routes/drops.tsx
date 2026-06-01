@@ -11,8 +11,10 @@ import {
   Trash2,
   Calculator,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -165,15 +167,6 @@ export default function DropsPage() {
 }
 
 function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: any) {
-  if (isError) {
-    return (
-      <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-xl text-center">
-        <p className="text-sm text-destructive font-medium">Erro ao carregar drops</p>
-        <p className="text-xs text-destructive/70 mt-1">{error?.message || "Erro inesperado"}</p>
-      </div>
-    );
-  }
-
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -183,6 +176,22 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
       </div>
     );
   }
+
+  if (isError) {
+    return (
+      <div className="p-8 border border-destructive/20 bg-destructive/5 rounded-xl text-center flex flex-col items-center space-y-3">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <div>
+          <p className="text-sm text-destructive font-bold">Erro ao carregar drops</p>
+          <p className="text-xs text-destructive/70 mt-1 max-w-xs">{error?.message || "Ocorreu um erro ao buscar os dados do Supabase."}</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => window.location.reload()} className="h-8">
+          Tentar novamente
+        </Button>
+      </div>
+    );
+  }
+
 
   if (!drops || drops.length === 0) {
     return (
@@ -265,15 +274,6 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
 }
 
 function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
-  if (isError) {
-    return (
-      <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-xl text-center">
-        <p className="text-sm text-destructive font-medium">Erro ao carregar peças</p>
-        <p className="text-xs text-destructive/70 mt-1">{error?.message || "Erro inesperado"}</p>
-      </div>
-    );
-  }
-
   if (!dropId) {
     return (
       <Card className="border-dashed py-24 flex flex-col items-center justify-center text-center space-y-4">
@@ -297,6 +297,33 @@ function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
       </div>
     );
   }
+
+  if (isError) {
+    return (
+      <div className="p-8 border border-destructive/20 bg-destructive/5 rounded-xl text-center flex flex-col items-center space-y-3">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <div>
+          <p className="text-sm text-destructive font-bold">Erro ao carregar peças</p>
+          <p className="text-xs text-destructive/70 mt-1">{error?.message || "Erro ao buscar peças."}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!pieces || pieces.length === 0) {
+    return (
+      <Card className="border-dashed py-24 flex flex-col items-center justify-center text-center space-y-4">
+        <div className="p-4 rounded-full bg-accent/50">
+          <Package className="h-10 w-10 text-muted-foreground opacity-30" />
+        </div>
+        <div className="space-y-1">
+          <p className="font-semibold text-lg">Nenhuma peça neste drop</p>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">Este lançamento ainda não possui peças cadastradas.</p>
+        </div>
+      </Card>
+    );
+  }
+
 
   return (
     <div className="space-y-4">
