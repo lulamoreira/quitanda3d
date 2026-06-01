@@ -740,9 +740,10 @@ function PriceCalculatorDialog({ piece, onUsePrice }: { piece: any, onUsePrice: 
               <div className="p-3 border rounded-lg space-y-1 text-sm bg-accent/20">
                 <div className="flex justify-between"><span>Custo Filamento</span> <span>R$ {costs.filamentCost.toFixed(2)}</span></div>
                 <div className="flex justify-between"><span>Custo Energia</span> <span>R$ {costs.energyCost.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span>Custo Embalagem</span> <span>R$ {costs.packaging_cost.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span>Custo Embalagem</span> <span>R$ {costs.packagingCost.toFixed(2)}</span></div>
                 <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Custo Total</span> <span>R$ {costs.totalProduction.toFixed(2)}</span></div>
               </div>
+
 
               <div className="grid gap-3">
                 <Card className="bg-primary/5 border-primary/20 p-3 flex items-center justify-between">
