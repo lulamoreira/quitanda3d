@@ -129,36 +129,35 @@ function Financeiro() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard 
             title="Receita Bruta" 
-            value={Number(totals.revenue || 0)} 
+            value={totals.revenue} 
             icon={TrendingUp} 
             color="text-blue-500" 
             index={0} 
           />
           <SummaryCard 
             title="Comissões Pagas" 
-            value={Number(totals.commissions || 0)} 
+            value={totals.commissions} 
             icon={Percent} 
             color="text-slate-500" 
             index={1} 
           />
           <SummaryCard 
             title="Custo Produção" 
-            value={Number(totals.costs || 0)} 
+            value={totals.costs} 
             icon={Package} 
             color="text-orange-500" 
             index={2} 
           />
           <SummaryCard 
             title="Lucro Líquido" 
-            value={Number(totals.profit || 0)} 
+            value={totals.profit} 
             icon={DollarSign} 
             color="text-success" 
             highlight 
             index={3} 
           />
-
-
         </div>
+
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
