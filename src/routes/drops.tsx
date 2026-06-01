@@ -50,6 +50,22 @@ import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import { generateCopyFn } from "@/lib/ai-service";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
