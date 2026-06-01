@@ -104,7 +104,7 @@ function Configuracoes() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <Card>
+          <Card className="animate-fade-slide-up" style={getStaggerDelay(0)}>
             <CardHeader>
               <CardTitle className="text-lg">Parâmetros de Custo e Venda</CardTitle>
             </CardHeader>
