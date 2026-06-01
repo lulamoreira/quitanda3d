@@ -652,3 +652,282 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
     </Dialog>
   );
 }
+
+function PriceCalculatorDialog({ piece, onUsePrice }: { piece: any, onUsePrice: (price: number, platform: 'ml' | 'shopee', grams: number, hours: number) => void }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [grams, setGrams] = useState(piece.filament_grams || 0);
+  const [hours, setHours] = useState(piece.print_hours || 0);
+  const queryClient = useQueryClient();
+
+  const { data: settings } = useQuery({
+    queryKey: ["cost_settings"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("cost_settings").select("*").single();
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const costs = useMemo(() => {
+    if (!settings) return null;
+    const filamentCost = (grams / 1000) * Number(settings.filament_price_per_kg);
+    const energyCost = hours * Number(settings.energy_cost_per_hour);
+    const packagingCost = Number(settings.packaging_cost);
+    const totalProduction = filamentCost + energyCost + packagingCost;
+
+    const priceML = totalProduction / (1 - Number(settings.ml_commission_rate) / 100) / (1 - Number(settings.desired_margin) / 100);
+    const priceShopee = totalProduction / (1 - Number(settings.shopee_commission_rate) / 100) / (1 - Number(settings.desired_margin) / 100);
+
+    return { filamentCost, energyCost, packagingCost, totalProduction, priceML, priceShopee };
+  }, [grams, hours, settings]);
+
+  const updatePieceMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from('pieces').update({
+        filament_grams: grams,
+        print_hours: hours
+      }).eq('id', piece.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
+    }
+  });
+
+  const handleUsePrice = (price: number, platform: 'ml' | 'shopee') => {
+    onUsePrice(price, platform, grams, hours);
+    updatePieceMutation.mutate();
+    setIsOpen(false);
+    toast.success("Preço aplicado e dados salvos!");
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="sm" className="flex-1 text-xs h-8">
+          <Calculator className="mr-2 h-3 w-3" />
+          Calcular preço
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[450px]">
+        <DialogHeader>
+          <DialogTitle>Calculadora de Preço — {piece.name}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6 py-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Gramas de filamento</Label>
+              <Input type="number" value={grams} onChange={e => setGrams(Number(e.target.value))} />
+            </div>
+            <div className="space-y-2">
+              <Label>Horas de impressão</Label>
+              <Input type="number" step="0.1" value={hours} onChange={e => setHours(Number(e.target.value))} />
+            </div>
+          </div>
+
+          <div className="space-y-2 bg-muted/50 p-3 rounded-lg text-xs">
+            <h4 className="font-bold uppercase opacity-60">Valores de Referência (Configurações)</h4>
+            <div className="grid grid-cols-2 gap-2 opacity-80">
+              <p>Filamento: R$ {settings?.filament_price_per_kg}/kg</p>
+              <p>Energia: R$ {settings?.energy_cost_per_hour}/h</p>
+              <p>Embalagem: R$ {settings?.packaging_cost}</p>
+              <p>Margem: {settings?.desired_margin}%</p>
+            </div>
+          </div>
+
+          {costs && (
+            <div className="space-y-4">
+              <div className="p-3 border rounded-lg space-y-1 text-sm bg-accent/20">
+                <div className="flex justify-between"><span>Custo Filamento</span> <span>R$ {costs.filamentCost.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span>Custo Energia</span> <span>R$ {costs.energyCost.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span>Custo Embalagem</span> <span>R$ {costs.packaging_cost.toFixed(2)}</span></div>
+                <div className="flex justify-between font-bold border-t pt-1 mt-1"><span>Custo Total</span> <span>R$ {costs.totalProduction.toFixed(2)}</span></div>
+              </div>
+
+              <div className="grid gap-3">
+                <Card className="bg-primary/5 border-primary/20 p-3 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase font-bold opacity-60">Sugestão Mercado Livre</p>
+                    <p className="text-lg font-bold text-primary">R$ {costs.priceML.toFixed(2)}</p>
+                  </div>
+                  <Button size="sm" onClick={() => handleUsePrice(costs.priceML, 'ml')}>Usar este preço</Button>
+                </Card>
+
+                <Card className="bg-primary/5 border-primary/20 p-3 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] uppercase font-bold opacity-60">Sugestão Shopee</p>
+                    <p className="text-lg font-bold text-primary">R$ {costs.priceShopee.toFixed(2)}</p>
+                  </div>
+                  <Button size="sm" onClick={() => handleUsePrice(costs.priceShopee, 'shopee')}>Usar este preço</Button>
+                </Card>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PublicationDialog({ piece, disabled }: { piece: any, disabled: boolean }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [step, setStep] = useState<'loading' | 'review'>('loading');
+  const [aiData, setAiData] = useState<any>(null);
+  const queryClient = useQueryClient();
+
+  const handleStartPublish = async () => {
+    setIsOpen(true);
+    setStep('loading');
+    
+    try {
+      const { data: drop } = await supabase.from('drops').select('description').eq('id', piece.drop_id).single();
+      
+      const result = await generateCopyFn({
+        data: {
+          piece_name: piece.name,
+          drop_description: drop?.description || "",
+          price_figura: piece.price_figura ? Number(piece.price_figura) : null,
+          price_chaveiro: piece.price_chaveiro ? Number(piece.price_chaveiro) : null,
+          available_as: piece.available_as
+        }
+      });
+      
+      setAiData(result);
+      setStep('review');
+    } catch (error: any) {
+      console.error(error);
+      toast.error(`Erro ao gerar textos: ${error.message}`);
+      setIsOpen(false);
+    }
+  };
+
+  const publishMutation = useMutation({
+    mutationFn: async () => {
+      // Salvar listing
+      const { error: listError } = await supabase.from('listings').insert({
+        piece_id: piece.id,
+        platform: 'ml_shopee',
+        title: aiData.titulo_ml,
+        description_ml: aiData.descricao_ml,
+        description_shopee: aiData.descricao_shopee,
+        caption_instagram: aiData.caption_instagram,
+        caption_tiktok: aiData.caption_tiktok,
+        hashtags: aiData.hashtags,
+        price: Number(piece.price_figura || piece.price_chaveiro),
+        published_at: new Date().toISOString(),
+        status: 'ativo'
+      });
+      
+      if (listError) throw listError;
+      
+      // Atualizar peça
+      const { error: pieceError } = await supabase.from('pieces').update({
+        status: 'publicado'
+      }).eq('id', piece.id);
+      
+      if (pieceError) throw pieceError;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
+      toast.success("✓ Publicado com sucesso!", { className: "bg-success text-white" });
+      setIsOpen(false);
+    },
+    onError: (error: any) => {
+      toast.error(`Erro ao publicar: ${error.message}`);
+    }
+  });
+
+  return (
+    <>
+      <Button 
+        size="sm" 
+        className="flex-1 text-xs h-8 bg-primary hover:bg-primary/90" 
+        disabled={disabled}
+        onClick={handleStartPublish}
+      >
+        Publicar
+      </Button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className={cn(
+          "transition-all duration-300",
+          step === 'review' ? "sm:max-w-[700px]" : "sm:max-w-[400px]"
+        )}>
+          {step === 'loading' ? (
+            <div className="py-12 flex flex-col items-center justify-center space-y-4">
+              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <p className="font-medium animate-pulse">Gerando textos com IA...</p>
+            </div>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>Revisão de Anúncios — {piece.name}</DialogTitle>
+              </DialogHeader>
+              <div className="py-4">
+                <Tabs defaultValue="ml" className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="ml">ML</TabsTrigger>
+                    <TabsTrigger value="shopee">Shopee</TabsTrigger>
+                    <TabsTrigger value="instagram">Instagram</TabsTrigger>
+                    <TabsTrigger value="tiktok">TikTok</TabsTrigger>
+                  </TabsList>
+                  
+                  <TabsContent value="ml" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label>Título (ML)</Label>
+                      <Input value={aiData.titulo_ml} onChange={e => setAiData({...aiData, titulo_ml: e.target.value})} maxLength={60} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Descrição</Label>
+                      <Textarea value={aiData.descricao_ml} onChange={e => setAiData({...aiData, descricao_ml: e.target.value})} className="h-48" />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="shopee" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label>Título (Shopee)</Label>
+                      <Input value={aiData.titulo_shopee} onChange={e => setAiData({...aiData, titulo_shopee: e.target.value})} maxLength={60} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Descrição</Label>
+                      <Textarea value={aiData.descricao_shopee} onChange={e => setAiData({...aiData, descricao_shopee: e.target.value})} className="h-48" />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="instagram" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label>Legenda (Instagram)</Label>
+                      <Textarea value={aiData.caption_instagram} onChange={e => setAiData({...aiData, caption_instagram: e.target.value})} className="h-48" />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="tiktok" className="space-y-4 mt-4">
+                    <div className="space-y-2">
+                      <Label>Legenda (TikTok)</Label>
+                      <Textarea value={aiData.caption_tiktok} onChange={e => setAiData({...aiData, caption_tiktok: e.target.value})} className="h-32" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Hashtags</Label>
+                      <Textarea value={aiData.hashtags} onChange={e => setAiData({...aiData, hashtags: e.target.value})} className="h-24" />
+                    </div>
+                  </TabsContent>
+                </Tabs>
+              </div>
+              <DialogFooter className="gap-2 sm:gap-0">
+                <Button variant="ghost" onClick={() => setIsOpen(false)}>Cancelar</Button>
+                <Button 
+                  className="bg-primary hover:bg-primary/90" 
+                  onClick={() => publishMutation.mutate()}
+                  disabled={publishMutation.isPending}
+                >
+                  {publishMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Confirmar e Publicar"}
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
