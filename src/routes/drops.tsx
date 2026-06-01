@@ -15,8 +15,10 @@ import {
   Upload,
   Eye,
   Copy,
-  Check
+  Check,
+  CheckCircle2
 } from "lucide-react";
+
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
 
