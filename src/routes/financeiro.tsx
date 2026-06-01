@@ -7,12 +7,14 @@ import {
   Plus, 
   Loader2, 
   ShoppingCart,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  AlertCircle
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, getStaggerDelay } from "@/lib/formatters";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
