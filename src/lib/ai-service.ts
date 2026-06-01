@@ -1,13 +1,14 @@
 import { createServerFn } from "@tanstack/react-start";
 
 export const generateCopyFn = createServerFn({ method: "POST" })
-  .handler(async ({ data }: { data: { 
+  .handler(async (ctx: { data: { 
     piece_name: string; 
     drop_description: string; 
     price_figura: number | null; 
     price_chaveiro: number | null; 
     available_as: string;
   } }) => {
+    const data = ctx.data;
     const prompt = `Gere copy de vendas em português brasileiro para esta peça de impressão 3D:
 Peça: ${data.piece_name}
 Contexto: ${data.drop_description}
