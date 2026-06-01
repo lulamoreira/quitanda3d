@@ -18,6 +18,8 @@ import {
   Clock,
   History,
   FileText,
+  MoreVertical,
+  Pencil,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
