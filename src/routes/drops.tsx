@@ -411,6 +411,11 @@ function PieceCard({ piece, index }: any) {
     toggleMutation.mutate(checked);
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copiado para a área de transferência!");
+  };
+
   const statusColors: any = {
     'pendente': 'bg-gray-100 text-gray-600',
     'publicado': 'bg-green-100 text-green-700',
@@ -432,8 +437,29 @@ function PieceCard({ piece, index }: any) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="font-semibold truncate">{piece.name}</h4>
-              <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold", statusColors[piece.status] || 'bg-muted')}>
+              <div className="space-y-1 min-w-0">
+                <h4 className="font-semibold truncate">{piece.name}</h4>
+                <div className="flex flex-wrap items-center gap-2">
+                  {piece.stlflix_code && (
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted/80 h-5 px-1.5 text-[10px] gap-1 cursor-pointer" onClick={() => copyToClipboard(piece.stlflix_code)}>
+                      {piece.stlflix_code}
+                      <Copy className="h-2.5 w-2.5" />
+                    </Badge>
+                  )}
+                  {piece.stlflix_url && (
+                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors">
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {piece.print_time_mono && (
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5" />
+                      Mono: {piece.print_time_mono}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold shrink-0", statusColors[piece.status] || 'bg-muted')}>
                 {piece.status}
               </Badge>
             </div>
@@ -449,7 +475,7 @@ function PieceCard({ piece, index }: any) {
                   Vender esta peça
                 </Label>
               </div>
-              {piece.piece_url && (
+              {piece.piece_url && !piece.stlflix_url && (
                 <a href={piece.piece_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                   <ExternalLink className="h-4 w-4" />
                 </a>
