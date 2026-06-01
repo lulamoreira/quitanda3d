@@ -581,7 +581,7 @@ function PieceCard({ piece, index }: any) {
 }
 
 
-function CreateDropDialog({ isOpen, onOpenChange }: any) {
+function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
@@ -608,6 +608,21 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
       source: ""
     }
   ]);
+
+  useEffect(() => {
+    if (editingDrop) {
+      setDropData({
+        name: editingDrop.drop_name || "",
+        description: editingDrop.description || "",
+        image_url: editingDrop.drop_image_url || "",
+        link: editingDrop.drop_link || ""
+      });
+      // For editing, we don't show the pieces section in the same way or we keep it empty for new additions
+      // The requirement says "pré-preenchido com os dados do drop selecionado"
+    } else {
+      setDropData({ name: "", description: "", image_url: "", link: "" });
+    }
+  }, [editingDrop, isOpen]);
 
   const addPiece = () => {
     setPieces([...pieces, { 
