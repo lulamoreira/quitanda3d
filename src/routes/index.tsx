@@ -7,7 +7,8 @@ import {
   Package, 
   Percent,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Zap
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
