@@ -48,12 +48,11 @@ import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import { generateCopyFn } from "@/lib/ai-service";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+
 export const Route = createFileRoute("/drops")({
-  head: () => ({
-    meta: [
-      { title: "Drops | Quitanda3dSHOP" },
-    ],
-  }),
+
   component: DropsPage,
 });
 
