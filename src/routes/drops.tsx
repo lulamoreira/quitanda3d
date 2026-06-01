@@ -22,6 +22,7 @@ import {
   Pencil,
   HardDrive,
   ChevronDown,
+  Globe,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
