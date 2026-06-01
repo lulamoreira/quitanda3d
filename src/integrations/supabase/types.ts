@@ -135,17 +135,21 @@ export type Database = {
           active: boolean | null
           available_as: string | null
           created_at: string | null
+          drive_url: string | null
           drop_id: string | null
           filament_grams: number | null
           full_description: string | null
           height_cm: string | null
           id: string
           image_url: string | null
+          material: string | null
           name: string
           piece_url: string | null
           price_chaveiro: number | null
           price_figura: number | null
           print_hours: number | null
+          print_notes: string | null
+          print_time_estimated: string | null
           print_time_mono: string | null
           print_time_multi: string | null
           source: string | null
@@ -158,17 +162,21 @@ export type Database = {
           active?: boolean | null
           available_as?: string | null
           created_at?: string | null
+          drive_url?: string | null
           drop_id?: string | null
           filament_grams?: number | null
           full_description?: string | null
           height_cm?: string | null
           id?: string
           image_url?: string | null
+          material?: string | null
           name: string
           piece_url?: string | null
           price_chaveiro?: number | null
           price_figura?: number | null
           print_hours?: number | null
+          print_notes?: string | null
+          print_time_estimated?: string | null
           print_time_mono?: string | null
           print_time_multi?: string | null
           source?: string | null
@@ -181,17 +189,21 @@ export type Database = {
           active?: boolean | null
           available_as?: string | null
           created_at?: string | null
+          drive_url?: string | null
           drop_id?: string | null
           filament_grams?: number | null
           full_description?: string | null
           height_cm?: string | null
           id?: string
           image_url?: string | null
+          material?: string | null
           name?: string
           piece_url?: string | null
           price_chaveiro?: number | null
           price_figura?: number | null
           print_hours?: number | null
+          print_notes?: string | null
+          print_time_estimated?: string | null
           print_time_mono?: string | null
           print_time_multi?: string | null
           source?: string | null

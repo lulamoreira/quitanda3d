@@ -20,6 +20,8 @@ import {
   FileText,
   MoreVertical,
   Pencil,
+  HardDrive,
+  ChevronDown,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
@@ -482,6 +484,7 @@ function PieceCard({ piece, index }: any) {
   const [priceChaveiro, setPriceChaveiro] = useState(piece.price_chaveiro || "");
   const [isCalcOpen, setIsCalcOpen] = useState(false);
   const [isPubOpen, setIsPubOpen] = useState(false);
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   
   const queryClient = useQueryClient();
 
@@ -539,9 +542,20 @@ function PieceCard({ piece, index }: any) {
                     </Badge>
                   )}
                   {piece.stlflix_url && (
-                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors">
+                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors" title="Abrir na STLFLIX">
                       <ExternalLink className="h-3 w-3" />
                     </a>
+                  )}
+                  {piece.drive_url && (
+                    <a href={piece.drive_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 flex items-center gap-1 transition-colors" title="Abrir no Google Drive">
+                      <HardDrive className="h-3 w-3" />
+                      <span className="text-[10px]">Abrir arquivo</span>
+                    </a>
+                  )}
+                  {piece.material && (
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground h-5 px-1.5 text-[10px]">
+                      {piece.material}
+                    </Badge>
                   )}
                   {piece.print_time_mono && (
                     <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -549,7 +563,29 @@ function PieceCard({ piece, index }: any) {
                       Mono: {piece.print_time_mono}
                     </span>
                   )}
+                  {piece.print_time_estimated && (
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5" />
+                      ~{piece.print_time_estimated}
+                    </span>
+                  )}
                 </div>
+                {piece.print_notes && (
+                  <div className="mt-1">
+                    <button 
+                      onClick={() => setIsNotesExpanded(!isNotesExpanded)}
+                      className="text-[10px] text-primary flex items-center gap-1 hover:underline"
+                    >
+                      <ChevronDown className={cn("h-2.5 w-2.5 transition-transform", isNotesExpanded && "rotate-180")} />
+                      {isNotesExpanded ? "Ocultar obs." : "Ver obs."}
+                    </button>
+                    {isNotesExpanded && (
+                      <p className="text-[10px] text-muted-foreground mt-1 bg-muted/30 p-1.5 rounded border border-dashed">
+                        {piece.print_notes}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold shrink-0", statusColors[piece.status] || 'bg-muted')}>
                 {piece.status}
@@ -665,7 +701,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
     name: "",
     description: "",
     image_url: "",
-    link: ""
+    link: "",
+    source: ""
   });
   const [pieces, setPieces] = useState<any[]>([
     { 
@@ -679,7 +716,11 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       print_time_mono: "",
       print_time_multi: "",
       height_cm: "",
-      source: ""
+      source: "",
+      drive_url: "",
+      material: "",
+      print_notes: "",
+      print_time_estimated: ""
     }
   ]);
 
@@ -689,12 +730,13 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
         name: editingDrop.drop_name || "",
         description: editingDrop.description || "",
         image_url: editingDrop.drop_image_url || "",
-        link: editingDrop.drop_link || ""
+        link: editingDrop.drop_link || "",
+        source: editingDrop.source || ""
       });
       // For editing, we don't show the pieces section in the same way or we keep it empty for new additions
       // The requirement says "pré-preenchido com os dados do drop selecionado"
     } else {
-      setDropData({ name: "", description: "", image_url: "", link: "" });
+      setDropData({ name: "", description: "", image_url: "", link: "", source: "" });
     }
   }, [editingDrop, isOpen]);
 
@@ -710,7 +752,11 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       print_time_mono: "",
       print_time_multi: "",
       height_cm: "",
-      source: ""
+      source: "",
+      drive_url: "",
+      material: "",
+      print_notes: "",
+      print_time_estimated: ""
     }]);
   };
 
@@ -813,7 +859,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             description: dropData.description,
             drop_image_url: dropData.image_url,
             drop_link: dropData.link,
-            source: pieces[0]?.source || 'manual'
+            source: dropData.source || pieces[0]?.source || 'manual'
           })
           .select()
           .single();
@@ -832,12 +878,16 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             full_description: p.full_description,
             stlflix_code: p.stlflix_code,
             stlflix_slug: p.stlflix_slug,
-            stlflix_url: p.piece_url,
-            print_time_mono: p.print_time_mono,
-            print_time_multi: p.print_time_multi,
-            height_cm: p.height_cm,
-            source: p.source || 'manual'
-          }));
+          stlflix_url: p.piece_url,
+          print_time_mono: p.print_time_mono,
+          print_time_multi: p.print_time_multi,
+          height_cm: p.height_cm,
+          source: p.source || 'manual',
+          drive_url: p.drive_url,
+          material: p.material,
+          print_notes: p.print_notes,
+          print_time_estimated: p.print_time_estimated
+        }));
 
         if (validPieces.length > 0) {
           const { error: piecesError } = await supabase
@@ -852,7 +902,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       queryClient.invalidateQueries({ queryKey: ["drops"] });
       onOpenChange(false);
       // Reset form
-      setDropData({ name: "", description: "", image_url: "", link: "" });
+      setDropData({ name: "", description: "", image_url: "", link: "", source: "" });
       setPieces([{ 
         name: "", 
         image_url: "", 
@@ -864,7 +914,11 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
         print_time_mono: "",
         print_time_multi: "",
         height_cm: "",
-        source: ""
+        source: "",
+        drive_url: "",
+        material: "",
+        print_notes: "",
+        print_time_estimated: ""
       }]);
       setStlflixUrl("");
     } catch (error: any) {
@@ -889,7 +943,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
         </DialogHeader>
         
         <Tabs defaultValue="manual" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-6">
             <TabsTrigger value="manual" className="gap-2">
               <FileText className="h-4 w-4" />
               Manual
@@ -897,6 +951,10 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             <TabsTrigger value="import" className="gap-2">
               <History className="h-4 w-4" />
               Importar por link
+            </TabsTrigger>
+            <TabsTrigger value="drive" className="gap-2">
+              <HardDrive className="h-4 w-4" />
+              Arquivo próprio
             </TabsTrigger>
           </TabsList>
 
@@ -1049,6 +1107,113 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                 </div>
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="drive" className="space-y-6">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label>Nome da peça *</Label>
+                <Input 
+                  placeholder="Nome da miniatura/objeto" 
+                  value={pieces[0].name}
+                  onChange={e => {
+                    updatePiece(0, 'name', e.target.value);
+                    setDropData({...dropData, name: e.target.value, source: 'manual'});
+                    updatePiece(0, 'source', 'manual');
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Link do arquivo no Google Drive</Label>
+                <div className="relative">
+                  <Input 
+                    placeholder="Cole o link de compartilhamento do Google Drive" 
+                    value={pieces[0].drive_url}
+                    onChange={e => updatePiece(0, 'drive_url', e.target.value)}
+                    className="pl-10"
+                  />
+                  <HardDrive className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>URL da imagem/foto</Label>
+                  <Input 
+                    placeholder="https://..." 
+                    value={pieces[0].image_url}
+                    onChange={e => {
+                      updatePiece(0, 'image_url', e.target.value);
+                      setDropData({...dropData, image_url: e.target.value});
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Disponível como</Label>
+                  <Select 
+                    value={pieces[0].available_as} 
+                    onValueChange={val => updatePiece(0, 'available_as', val)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="figura">Figura</SelectItem>
+                      <SelectItem value="chaveiro">Chaveiro</SelectItem>
+                      <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descrição da peça</Label>
+                <Textarea 
+                  placeholder="Detalhes sobre a peça..." 
+                  value={pieces[0].full_description}
+                  onChange={e => updatePiece(0, 'full_description', e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tempo estimado</Label>
+                  <Input 
+                    placeholder="Ex: 2h30min" 
+                    value={pieces[0].print_time_estimated}
+                    onChange={e => updatePiece(0, 'print_time_estimated', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Material</Label>
+                  <Input 
+                    placeholder="Ex: PLA" 
+                    value={pieces[0].material}
+                    onChange={e => updatePiece(0, 'material', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Observações de impressão</Label>
+                <Textarea 
+                  placeholder="Configurações, temperatura, suportes, etc." 
+                  value={pieces[0].print_notes}
+                  onChange={e => updatePiece(0, 'print_notes', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t">
+              <Button 
+                onClick={handleSave} 
+                disabled={isLoading} 
+                className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
+              >
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
+              </Button>
+            </div>
           </TabsContent>
 
           <TabsContent value="manual" className="space-y-6">
@@ -1304,12 +1469,12 @@ function PublicationDialog({ piece, disabled }: { piece: any, disabled: boolean 
     setStep('loading');
     
     try {
-      const { data: pieceData } = await supabase.from('pieces').select('full_description').eq('id', piece.id).single();
+      const { data: pieceData } = await supabase.from('pieces').select('full_description, print_notes').eq('id', piece.id).single();
       const { data: drop } = await supabase.from('drops').select('description').eq('id', piece.drop_id).single();
       
       const result = await generateCopyFn({
         piece_name: piece.name,
-        drop_description: pieceData?.full_description || drop?.description || "",
+        drop_description: pieceData?.full_description || (pieceData as any)?.description || pieceData?.print_notes || drop?.description || "",
         price_figura: piece.price_figura ? Number(piece.price_figura) : null,
         price_chaveiro: piece.price_chaveiro ? Number(piece.price_chaveiro) : null,
         available_as: piece.available_as
