@@ -701,7 +701,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
     name: "",
     description: "",
     image_url: "",
-    link: ""
+    link: "",
+    source: ""
   });
   const [pieces, setPieces] = useState<any[]>([
     { 
