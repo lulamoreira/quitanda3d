@@ -1107,6 +1107,113 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             )}
           </TabsContent>
 
+          <TabsContent value="drive" className="space-y-6">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label>Nome da peça *</Label>
+                <Input 
+                  placeholder="Nome da miniatura/objeto" 
+                  value={pieces[0].name}
+                  onChange={e => {
+                    updatePiece(0, 'name', e.target.value);
+                    setDropData({...dropData, name: e.target.value, source: 'manual'});
+                    updatePiece(0, 'source', 'manual');
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Link do arquivo no Google Drive</Label>
+                <div className="relative">
+                  <Input 
+                    placeholder="Cole o link de compartilhamento do Google Drive" 
+                    value={pieces[0].drive_url}
+                    onChange={e => updatePiece(0, 'drive_url', e.target.value)}
+                    className="pl-10"
+                  />
+                  <HardDrive className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>URL da imagem/foto</Label>
+                  <Input 
+                    placeholder="https://..." 
+                    value={pieces[0].image_url}
+                    onChange={e => {
+                      updatePiece(0, 'image_url', e.target.value);
+                      setDropData({...dropData, image_url: e.target.value});
+                    }}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Disponível como</Label>
+                  <Select 
+                    value={pieces[0].available_as} 
+                    onValueChange={val => updatePiece(0, 'available_as', val)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="figura">Figura</SelectItem>
+                      <SelectItem value="chaveiro">Chaveiro</SelectItem>
+                      <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Descrição da peça</Label>
+                <Textarea 
+                  placeholder="Detalhes sobre a peça..." 
+                  value={pieces[0].full_description}
+                  onChange={e => updatePiece(0, 'full_description', e.target.value)}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Tempo estimado</Label>
+                  <Input 
+                    placeholder="Ex: 2h30min" 
+                    value={pieces[0].print_time_estimated}
+                    onChange={e => updatePiece(0, 'print_time_estimated', e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Material</Label>
+                  <Input 
+                    placeholder="Ex: PLA" 
+                    value={pieces[0].material}
+                    onChange={e => updatePiece(0, 'material', e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Observações de impressão</Label>
+                <Textarea 
+                  placeholder="Configurações, temperatura, suportes, etc." 
+                  value={pieces[0].print_notes}
+                  onChange={e => updatePiece(0, 'print_notes', e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t">
+              <Button 
+                onClick={handleSave} 
+                disabled={isLoading} 
+                className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
+              >
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
+              </Button>
+            </div>
+          </TabsContent>
+
           <TabsContent value="manual" className="space-y-6">
             <div className="grid gap-4">
               <div className="space-y-2">
