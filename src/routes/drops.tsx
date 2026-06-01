@@ -732,7 +732,9 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       drive_url: "",
       material: "",
       print_notes: "",
-      print_time_estimated: ""
+      print_time_estimated: "",
+      makerworld_url: "",
+      makerworld_model_id: ""
     }
   ]);
 
