@@ -64,11 +64,14 @@ export default function DropsPage() {
         `)
         .order("created_at", { ascending: false })
         .limit(1000);
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error fetching drops:", error);
+        throw error;
+      }
       return data;
     },
-    retry: 1,
   });
+
 
   const { data: pieces, isLoading: isLoadingPieces, isError: isErrorPieces, error: errorPieces } = useQuery({
     queryKey: ["pieces", selectedDropId],
