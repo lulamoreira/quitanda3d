@@ -93,7 +93,7 @@ function Financeiro() {
     }
 
     return sales.filter(sale => {
-      const saleDate = new Date(sale.sale_date);
+      const saleDate = sale.sale_date ? new Date(sale.sale_date) : new Date();
       return isWithinInterval(saleDate, { start, end: now });
     });
   }, [sales, dateFilter]);
