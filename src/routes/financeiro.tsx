@@ -136,26 +136,27 @@ function Financeiro() {
           />
           <SummaryCard 
             title="Comissões Pagas" 
-            value={totals.commissions} 
+            value={Number(totals.commissions)} 
             icon={Percent} 
             color="text-slate-500" 
             index={1} 
           />
           <SummaryCard 
             title="Custo Produção" 
-            value={totals.costs} 
+            value={Number(totals.costs)} 
             icon={Package} 
             color="text-orange-500" 
             index={2} 
           />
           <SummaryCard 
             title="Lucro Líquido" 
-            value={totals.profit} 
+            value={Number(totals.profit)} 
             icon={DollarSign} 
             color="text-success" 
             highlight 
             index={3} 
           />
+
         </div>
 
         <div className="space-y-4">
