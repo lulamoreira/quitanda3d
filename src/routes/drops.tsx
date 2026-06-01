@@ -187,7 +187,7 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
 
   return (
     <div className="space-y-4">
-      {drops.map((drop: any) => {
+      {drops.map((drop: any, index: number) => {
         const isSelected = selectedId === drop.id;
         const totalPieces = drop.pieces?.length || 0;
         const publishedCount = drop.pieces?.filter((p: any) => p.status === 'publicado').length || 0;
@@ -207,9 +207,10 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
           <Card 
             key={drop.id}
             className={cn(
-              "cursor-pointer transition-all hover:shadow-md border-2",
+              "cursor-pointer transition-all hover:shadow-md border-2 animate-fade-slide-up",
               isSelected ? "border-primary ring-1 ring-primary/20" : "border-transparent"
             )}
+            style={getStaggerDelay(index)}
             onClick={() => onSelect(drop.id)}
           >
             <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
@@ -235,7 +236,7 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(drop.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                    {formatDate(drop.created_at)}
                   </p>
                 </div>
                 <div className="flex items-center justify-between mt-4">
@@ -247,6 +248,7 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
           </Card>
         );
       })}
+
     </div>
   );
 }
