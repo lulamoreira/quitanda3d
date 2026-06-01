@@ -5,18 +5,21 @@ import { ptBR } from "date-fns/locale";
  * Formata um valor numérico para o padrão de moeda brasileiro (R$ X.XXX,XX)
  */
 export const formatCurrency = (value: number | string | null | undefined): string => {
-  const amount = typeof value === 'string' ? parseFloat(value) : value;
-  if (amount === null || amount === undefined || isNaN(amount)) {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(0);
+  let amount = 0;
+  if (typeof value === 'string') {
+    amount = parseFloat(value);
+  } else if (typeof value === 'number') {
+    amount = value;
   }
+  
+  if (isNaN(amount)) amount = 0;
+
   return new Intl.NumberFormat('pt-BR', {
     style: 'currency',
     currency: 'BRL',
   }).format(amount);
 };
+
 
 /**
  * Formata uma data para o padrão brasileiro
