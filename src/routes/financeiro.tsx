@@ -104,6 +104,7 @@ export default function Financeiro() {
   }, [sales, dateFilter]);
 
   const totals = useMemo(() => {
+    if (!filteredSales) return { revenue: 0, commissions: 0, costs: 0, profit: 0 };
     return filteredSales.reduce((acc, sale) => {
       const revenue = Number(sale.gross_revenue) || 0;
       const commission = (revenue * (Number(sale.commission_rate) || 0)) / 100;
@@ -118,6 +119,7 @@ export default function Financeiro() {
       };
     }, { revenue: 0, commissions: 0, costs: 0, profit: 0 });
   }, [filteredSales]);
+
 
   return (
     <AppShell>
