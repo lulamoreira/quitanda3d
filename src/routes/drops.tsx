@@ -1038,18 +1038,74 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
               <div className="space-y-2">
                 <Label>Link da peça na STLFLIX</Label>
-                <Input 
-                  placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
-                  value={stlflixUrl}
-                  onChange={e => {
-                    setStlflixUrl(e.target.value);
-                    setDropData(prev => ({ ...prev, link: e.target.value, source: 'stlflix_import' }));
-                    updatePiece(0, 'piece_url', e.target.value);
-                    updatePiece(0, 'source', 'stlflix_import');
-                  }}
-                />
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
+                    value={stlflixUrl}
+                    onChange={e => setStlflixUrl(e.target.value)}
+                  />
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 shrink-0" 
+                    onClick={async () => {
+                      if (!stlflixUrl) {
+                        toast.error("Cole o link da peça na STLFLIX");
+                        return;
+                      }
+                      setIsScraping(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('scrape-stlflix', {
+                          body: { url: stlflixUrl }
+                        });
+
+                        if (error) throw error;
+
+                        if (data.success) {
+                          setDropData(prev => ({
+                            ...prev,
+                            name: data.title,
+                            image_url: data.image_url,
+                            link: data.stlflix_url,
+                            source: 'stlflix_import'
+                          }));
+
+                          setPieces([{
+                            ...pieces[0],
+                            name: data.title,
+                            image_url: data.image_url,
+                            piece_url: data.stlflix_url,
+                            available_as: "ambos",
+                            full_description: data.description,
+                            stlflix_code: data.stl_code,
+                            stlflix_slug: data.slug,
+                            print_time_mono: data.print_time_mono,
+                            print_time_multi: data.print_time_multi,
+                            height_cm: data.height_cm,
+                            source: 'stlflix_import'
+                          }]);
+                          
+                          toast.success("✓ Dados importados com sucesso");
+                        } else {
+                          toast.error(data.error || "Erro ao importar dados");
+                        }
+                      } catch (err: any) {
+                        console.error(err);
+                        toast.error(`Erro: ${err.message}`);
+                      } finally {
+                        setIsScraping(false);
+                      }
+                    }}
+                    disabled={isScraping}
+                  >
+                    {isScraping ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    Importar
+                  </Button>
+                </div>
                 <p className="text-[11px] text-blue-600 font-medium">
-                  Cole o link da peça para referência. Os dados precisam ser preenchidos manualmente pois a STLFLIX requer login.
+                  Tente importar automaticamente primeiro. Se falhar, preencha os dados abaixo.
                 </p>
               </div>
             </div>
@@ -1062,8 +1118,9 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                     placeholder="Nome da peça"
                     value={dropData.name}
                     onChange={e => {
-                      setDropData({...dropData, name: e.target.value});
+                      setDropData({...dropData, name: e.target.value, source: 'stlflix_import'});
                       updatePiece(0, 'name', e.target.value);
+                      updatePiece(0, 'source', 'stlflix_import');
                     }}
                   />
                 </div>
@@ -1209,7 +1266,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                     value={pieces[0].image_url}
                     onChange={e => {
                       updatePiece(0, 'image_url', e.target.value);
-                      setDropData({...dropData, image_url: e.target.value});
+                      setDropData({...dropData, image_url: e.target.value, source: 'manual'});
+                      updatePiece(0, 'source', 'manual');
                     }}
                   />
                 </div>
