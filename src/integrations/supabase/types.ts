@@ -142,6 +142,8 @@ export type Database = {
           height_cm: string | null
           id: string
           image_url: string | null
+          makerworld_model_id: string | null
+          makerworld_url: string | null
           material: string | null
           name: string
           piece_url: string | null
@@ -169,6 +171,8 @@ export type Database = {
           height_cm?: string | null
           id?: string
           image_url?: string | null
+          makerworld_model_id?: string | null
+          makerworld_url?: string | null
           material?: string | null
           name: string
           piece_url?: string | null
@@ -196,6 +200,8 @@ export type Database = {
           height_cm?: string | null
           id?: string
           image_url?: string | null
+          makerworld_model_id?: string | null
+          makerworld_url?: string | null
           material?: string | null
           name?: string
           piece_url?: string | null
