@@ -14,10 +14,11 @@ import {
   Calculator,
   Upload,
   Eye,
-  CheckCircle2,
   Copy,
   Check
 } from "lucide-react";
+import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
