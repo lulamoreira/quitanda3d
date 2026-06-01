@@ -25,8 +25,10 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { subDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+
 
 export const Route = createFileRoute("/")({
   head: () => ({
