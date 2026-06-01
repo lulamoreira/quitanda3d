@@ -14,10 +14,32 @@ import {
   Calculator,
   Upload,
   Eye,
-  CheckCircle2,
   Copy,
-  Check
+  Check,
 } from "lucide-react";
+import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
+
+function CheckCircle2(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
+}
+
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -186,7 +208,7 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
 
   return (
     <div className="space-y-4">
-      {drops.map((drop: any) => {
+      {drops.map((drop: any, index: number) => {
         const isSelected = selectedId === drop.id;
         const totalPieces = drop.pieces?.length || 0;
         const publishedCount = drop.pieces?.filter((p: any) => p.status === 'publicado').length || 0;
@@ -206,9 +228,10 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
           <Card 
             key={drop.id}
             className={cn(
-              "cursor-pointer transition-all hover:shadow-md border-2",
+              "cursor-pointer transition-all hover:shadow-md border-2 animate-fade-slide-up",
               isSelected ? "border-primary ring-1 ring-primary/20" : "border-transparent"
             )}
+            style={getStaggerDelay(index)}
             onClick={() => onSelect(drop.id)}
           >
             <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
@@ -234,7 +257,7 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
                     </Badge>
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {format(new Date(drop.created_at), "d 'de' MMMM 'de' yyyy", { locale: ptBR })}
+                    {formatDate(drop.created_at)}
                   </p>
                 </div>
                 <div className="flex items-center justify-between mt-4">
@@ -246,6 +269,7 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
           </Card>
         );
       })}
+
     </div>
   );
 }
@@ -277,14 +301,15 @@ function PiecesList({ pieces, isLoading, dropId }: any) {
 
   return (
     <div className="space-y-4">
-      {pieces?.map((piece: any) => (
-        <PieceCard key={piece.id} piece={piece} />
+      {pieces?.map((piece: any, index: number) => (
+        <PieceCard key={piece.id} piece={piece} index={index} />
       ))}
     </div>
+
   );
 }
 
-function PieceCard({ piece }: any) {
+function PieceCard({ piece, index }: any) {
   const [isSelling, setIsSelling] = useState(piece.active || false);
   const [availableAs, setAvailableAs] = useState(piece.available_as || 'ambos');
   const [priceFigura, setPriceFigura] = useState(piece.price_figura || "");
@@ -319,7 +344,7 @@ function PieceCard({ piece }: any) {
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" style={getStaggerDelay(index)}>
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">

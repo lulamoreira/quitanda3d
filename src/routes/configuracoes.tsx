@@ -9,6 +9,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Settings, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
+import { getStaggerDelay } from "@/lib/formatters";
+
 
 export const Route = createFileRoute("/configuracoes")({
   head: () => ({
@@ -102,7 +104,7 @@ function Configuracoes() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <Card>
+          <Card className="animate-fade-slide-up" style={getStaggerDelay(0)}>
             <CardHeader>
               <CardTitle className="text-lg">Parâmetros de Custo e Venda</CardTitle>
             </CardHeader>

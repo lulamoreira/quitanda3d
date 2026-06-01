@@ -30,6 +30,7 @@ Retorne exatamente este JSON:
   "hashtags": "15 hashtags em português e inglês separadas por espaço"
 }`;
 
+    // Prefer specific model for copywriting
     const response = await fetch('https://api.lovable.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -37,7 +38,7 @@ Retorne exatamente este JSON:
         'Authorization': `Bearer ${process.env.LOVABLE_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'openai/gpt-4o',
+        model: 'openai/gpt-4o', 
         messages: [
           {
             role: 'system',
