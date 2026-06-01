@@ -902,7 +902,9 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
           drive_url: p.drive_url,
           material: p.material,
           print_notes: p.print_notes,
-          print_time_estimated: p.print_time_estimated
+          print_time_estimated: p.print_time_estimated,
+          makerworld_url: p.makerworld_url,
+          makerworld_model_id: p.makerworld_model_id
         }));
 
         if (validPieces.length > 0) {
