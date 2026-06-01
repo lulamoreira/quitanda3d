@@ -323,7 +323,7 @@ function PieceCard({ piece, index }: any) {
   };
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" style={getStaggerDelay(index)}>
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
