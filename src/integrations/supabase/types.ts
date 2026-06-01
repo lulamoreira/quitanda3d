@@ -14,7 +14,238 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cost_settings: {
+        Row: {
+          desired_margin: number | null
+          energy_cost_per_hour: number | null
+          filament_price_per_kg: number | null
+          id: string
+          ml_commission_rate: number | null
+          packaging_cost: number | null
+          shopee_commission_rate: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          desired_margin?: number | null
+          energy_cost_per_hour?: number | null
+          filament_price_per_kg?: number | null
+          id?: string
+          ml_commission_rate?: number | null
+          packaging_cost?: number | null
+          shopee_commission_rate?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          desired_margin?: number | null
+          energy_cost_per_hour?: number | null
+          filament_price_per_kg?: number | null
+          id?: string
+          ml_commission_rate?: number | null
+          packaging_cost?: number | null
+          shopee_commission_rate?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      drops: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          drop_image_url: string | null
+          drop_link: string | null
+          drop_name: string
+          id: string
+          source: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          drop_image_url?: string | null
+          drop_link?: string | null
+          drop_name: string
+          id?: string
+          source?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          drop_image_url?: string | null
+          drop_link?: string | null
+          drop_name?: string
+          id?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
+      listings: {
+        Row: {
+          caption_instagram: string | null
+          caption_tiktok: string | null
+          description_ml: string | null
+          description_shopee: string | null
+          hashtags: string | null
+          id: string
+          piece_id: string | null
+          platform: string
+          price: number | null
+          published_at: string | null
+          status: string | null
+          title: string | null
+        }
+        Insert: {
+          caption_instagram?: string | null
+          caption_tiktok?: string | null
+          description_ml?: string | null
+          description_shopee?: string | null
+          hashtags?: string | null
+          id?: string
+          piece_id?: string | null
+          platform: string
+          price?: number | null
+          published_at?: string | null
+          status?: string | null
+          title?: string | null
+        }
+        Update: {
+          caption_instagram?: string | null
+          caption_tiktok?: string | null
+          description_ml?: string | null
+          description_shopee?: string | null
+          hashtags?: string | null
+          id?: string
+          piece_id?: string | null
+          platform?: string
+          price?: number | null
+          published_at?: string | null
+          status?: string | null
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listings_piece_id_fkey"
+            columns: ["piece_id"]
+            isOneToOne: false
+            referencedRelation: "pieces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pieces: {
+        Row: {
+          active: boolean | null
+          available_as: string | null
+          created_at: string | null
+          drop_id: string | null
+          filament_grams: number | null
+          id: string
+          image_url: string | null
+          name: string
+          piece_url: string | null
+          price_chaveiro: number | null
+          price_figura: number | null
+          print_hours: number | null
+          status: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          available_as?: string | null
+          created_at?: string | null
+          drop_id?: string | null
+          filament_grams?: number | null
+          id?: string
+          image_url?: string | null
+          name: string
+          piece_url?: string | null
+          price_chaveiro?: number | null
+          price_figura?: number | null
+          print_hours?: number | null
+          status?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          available_as?: string | null
+          created_at?: string | null
+          drop_id?: string | null
+          filament_grams?: number | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          piece_url?: string | null
+          price_chaveiro?: number | null
+          price_figura?: number | null
+          print_hours?: number | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pieces_drop_id_fkey"
+            columns: ["drop_id"]
+            isOneToOne: false
+            referencedRelation: "drops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sales: {
+        Row: {
+          commission_rate: number | null
+          created_at: string | null
+          gross_revenue: number | null
+          id: string
+          listing_id: string | null
+          net_profit: number | null
+          piece_id: string | null
+          platform: string | null
+          production_cost: number | null
+          quantity: number | null
+          sale_date: string | null
+          unit_price: number | null
+        }
+        Insert: {
+          commission_rate?: number | null
+          created_at?: string | null
+          gross_revenue?: number | null
+          id?: string
+          listing_id?: string | null
+          net_profit?: number | null
+          piece_id?: string | null
+          platform?: string | null
+          production_cost?: number | null
+          quantity?: number | null
+          sale_date?: string | null
+          unit_price?: number | null
+        }
+        Update: {
+          commission_rate?: number | null
+          created_at?: string | null
+          gross_revenue?: number | null
+          id?: string
+          listing_id?: string | null
+          net_profit?: number | null
+          piece_id?: string | null
+          platform?: string | null
+          production_cost?: number | null
+          quantity?: number | null
+          sale_date?: string | null
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sales_piece_id_fkey"
+            columns: ["piece_id"]
+            isOneToOne: false
+            referencedRelation: "pieces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
