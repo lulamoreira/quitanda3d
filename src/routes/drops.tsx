@@ -287,6 +287,11 @@ function PiecesList({ pieces, isLoading, dropId }: any) {
 function PieceCard({ piece }: any) {
   const [isSelling, setIsSelling] = useState(piece.active || false);
   const [availableAs, setAvailableAs] = useState(piece.available_as || 'ambos');
+  const [priceFigura, setPriceFigura] = useState(piece.price_figura || "");
+  const [priceChaveiro, setPriceChaveiro] = useState(piece.price_chaveiro || "");
+  const [isCalcOpen, setIsCalcOpen] = useState(false);
+  const [isPubOpen, setIsPubOpen] = useState(false);
+  
   const queryClient = useQueryClient();
 
   const toggleMutation = useMutation({
@@ -384,7 +389,8 @@ function PieceCard({ piece }: any) {
                       className="pl-8 h-8 text-xs" 
                       placeholder="0,00" 
                       type="number"
-                      defaultValue={piece.price_figura}
+                      value={priceFigura}
+                      onChange={(e) => setPriceFigura(e.target.value)}
                     />
                   </div>
                 </div>
@@ -398,7 +404,8 @@ function PieceCard({ piece }: any) {
                       className="pl-8 h-8 text-xs" 
                       placeholder="0,00" 
                       type="number"
-                      defaultValue={piece.price_chaveiro}
+                      value={priceChaveiro}
+                      onChange={(e) => setPriceChaveiro(e.target.value)}
                     />
                   </div>
                 </div>
@@ -406,13 +413,22 @@ function PieceCard({ piece }: any) {
             </div>
 
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" className="flex-1 text-xs h-8">
-                <Calculator className="mr-2 h-3 w-3" />
-                Calcular preço
-              </Button>
-              <Button size="sm" className="flex-1 text-xs h-8 bg-primary hover:bg-primary/90" disabled>
-                Publicar
-              </Button>
+              <PriceCalculatorDialog 
+                piece={piece} 
+                onUsePrice={(p, type, grams, hours) => {
+                  if (type === 'ml') {
+                    if (availableAs === 'figura' || availableAs === 'ambos') setPriceFigura(p.toFixed(2));
+                    if (availableAs === 'chaveiro' || availableAs === 'ambos') setPriceChaveiro(p.toFixed(2));
+                  } else {
+                    if (availableAs === 'figura' || availableAs === 'ambos') setPriceFigura(p.toFixed(2));
+                    if (availableAs === 'chaveiro' || availableAs === 'ambos') setPriceChaveiro(p.toFixed(2));
+                  }
+                }}
+              />
+              <PublicationDialog 
+                piece={{ ...piece, price_figura: priceFigura, price_chaveiro: priceChaveiro, available_as: availableAs }} 
+                disabled={!priceFigura && !priceChaveiro}
+              />
             </div>
           </div>
         </div>
@@ -420,6 +436,7 @@ function PieceCard({ piece }: any) {
     </Card>
   );
 }
+
 
 function CreateDropDialog({ isOpen, onOpenChange }: any) {
   const queryClient = useQueryClient();
