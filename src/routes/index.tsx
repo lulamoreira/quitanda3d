@@ -160,7 +160,7 @@ function Dashboard() {
                         border: '1px solid hsl(var(--border))',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
                       }}
-                      formatter={(value: number) => [formatCurrency(value), ""]}
+                      formatter={(value: any) => [formatCurrency(Number(value)), ""]}
                     />
                     <Legend verticalAlign="bottom" height={36} iconType="circle" />
                     <Bar dataKey="receita" name="Receita Bruta" fill="hsl(var(--secondary))" radius={[4, 4, 0, 0]} />
