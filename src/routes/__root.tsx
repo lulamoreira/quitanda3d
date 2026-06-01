@@ -84,6 +84,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Quitanda3dSHOP" },
       { property: "og:description", content: "Painel de gestão Quitanda 3D" },
       { property: "og:type", content: "website" },
+      { name: "twitter:title", content: "Quitanda3dSHOP" },
+      { name: "twitter:description", content: "Painel de gestão Quitanda 3D" },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cbec2576-167b-4872-9e42-543d3b8ba882/id-preview-f6921340--27ba2115-6cd0-47c2-8994-bcbbeff12046.lovable.app-1780326984289.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/cbec2576-167b-4872-9e42-543d3b8ba882/id-preview-f6921340--27ba2115-6cd0-47c2-8994-bcbbeff12046.lovable.app-1780326984289.png" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
       {
