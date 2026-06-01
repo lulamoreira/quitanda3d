@@ -12,10 +12,10 @@ serve(async (req) => {
 
   try {
     const { data } = await req.json()
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
+    const ANTHROPIC_API_KEY = Deno.env.get('ANTHROPIC_API_KEY')
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not set')
+    if (!ANTHROPIC_API_KEY) {
+      throw new Error('ANTHROPIC_API_KEY is not set')
     }
 
     const prompt = `Gere copy de vendas em português brasileiro para esta peça de impressão 3D:
@@ -36,35 +36,28 @@ Retorne exatamente este JSON:
   "hashtags": "15 hashtags em português e inglês separadas por espaço"
 }`;
 
-    const response = await fetch('https://api.lovable.ai/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-4o', 
-        messages: [
-          {
-            role: 'system',
-            content: 'Você é o copywriter da Quitanda 3D, loja paulistana de impressão 3D premium com BambuLab X1C Carbon. Responda APENAS com JSON válido. Sem markdown, sem texto antes ou depois do JSON.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        response_format: { type: 'json_object' }
+        model: "claude-3-5-sonnet-20240620", // Actual current model identifier for Claude 3.5 Sonnet
+        max_tokens: 1500,
+        system: "Você é o copywriter da Quitanda 3D, loja paulistana de impressão 3D premium com BambuLab X1C Carbon. Responda APENAS com JSON válido. Sem markdown, sem texto antes ou depois do JSON.",
+        messages: [{ role: "user", content: prompt }]
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`AI Gateway error: ${errorText}`);
+      throw new Error(`Anthropic API error: ${errorText}`);
     }
 
     const aiResult = await response.json();
-    const content = aiResult.choices[0].message.content;
+    const content = aiResult.content[0].text;
     
     return new Response(content, {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
