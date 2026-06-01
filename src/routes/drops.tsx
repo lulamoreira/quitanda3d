@@ -1054,77 +1054,67 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
               <div className="space-y-2">
                 <Label>Link da peça na STLFLIX</Label>
+                <Input 
+                  placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
+                  value={stlflixUrl}
+                  onChange={e => setStlflixUrl(e.target.value)}
+                />
+                {stlflixDropTitle && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Drop: <span className="font-medium">{stlflixDropTitle}</span>
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Cole o código-fonte da página</Label>
                 <div className="flex gap-2">
-                  <Input 
-                    placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
-                    value={stlflixUrl}
-                    onChange={e => setStlflixUrl(e.target.value)}
+                  <Textarea 
+                    placeholder="Abra a página no STLFLIX → ⌘+Option+U → ⌘+A → ⌘+C → cole aqui"
+                    className="min-h-[100px] text-[10px] font-mono"
+                    value={pastedHtml}
+                    onChange={e => setPastedHtml(e.target.value)}
+                    rows={6}
                   />
                   <Button 
-                    className="bg-blue-600 hover:bg-blue-700 shrink-0" 
-                    onClick={async () => {
-                      if (!stlflixUrl) {
-                        toast.error("Cole o link da peça na STLFLIX");
-                        return;
-                      }
-                      setIsScraping(true);
-                      try {
-                        const { data, error } = await supabase.functions.invoke('scrape-stlflix', {
-                          body: { url: stlflixUrl }
-                        });
-
-                        if (error) throw error;
-
-                        if (data.success) {
-                          setDropData(prev => ({
-                            ...prev,
-                            name: data.title,
-                            image_url: data.image_url,
-                            link: data.stlflix_url,
-                            source: 'stlflix_import'
-                          }));
-
-                          setPieces([{
-                            ...pieces[0],
-                            name: data.title,
-                            image_url: data.image_url,
-                            piece_url: data.stlflix_url,
-                            available_as: "ambos",
-                            full_description: data.description,
-                            stlflix_code: data.stl_code,
-                            stlflix_slug: data.slug,
-                            print_time_mono: data.print_time_mono,
-                            print_time_multi: data.print_time_multi,
-                            height_cm: data.height_cm,
-                            source: 'stlflix_import'
-                          }]);
-                          
-                          toast.success("✓ Dados importados com sucesso");
-                        } else {
-                          toast.error(data.error || "Erro ao importar dados");
-                        }
-                      } catch (err: any) {
-                        console.error(err);
-                        toast.error(`Erro: ${err.message}`);
-                      } finally {
-                        setIsScraping(false);
-                      }
-                    }}
-                    disabled={isScraping}
+                    className="bg-blue-600 hover:bg-blue-700 shrink-0 self-end" 
+                    onClick={handleExtractSTLFLIX}
                   >
-                    {isScraping ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <Download className="h-4 w-4 mr-2" />
-                    )}
-                    Importar
+                    Extrair dados
                   </Button>
                 </div>
                 <p className="text-[11px] text-blue-600 font-medium">
-                  Tente importar automaticamente primeiro. Se falhar, preencha os dados abaixo.
+                  Abra a página da peça no navegador, use o atalho para ver o código-fonte (CTRL+U ou CMD+OPTION+U) e cole todo o conteúdo acima para preencher automaticamente.
                 </p>
               </div>
+
+              {stlflixGallery.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-xs">Escolha a imagem principal:</Label>
+                  <div className="flex gap-2">
+                    {stlflixGallery.map((url, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        className={`relative w-20 h-20 rounded-md overflow-hidden border-2 transition-all ${dropData.image_url === url ? 'border-primary' : 'border-transparent'}`}
+                        onClick={() => {
+                          setDropData({ ...dropData, image_url: url });
+                          updatePiece(0, 'image_url', url);
+                        }}
+                      >
+                        <img src={url} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                        {dropData.image_url === url && (
+                          <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                            <CheckCircle2 className="h-6 w-6 text-primary shadow-sm" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+
 
             <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
               <div className="grid gap-4">
