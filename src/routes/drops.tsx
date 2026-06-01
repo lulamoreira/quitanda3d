@@ -1306,12 +1306,12 @@ function PublicationDialog({ piece, disabled }: { piece: any, disabled: boolean 
     setStep('loading');
     
     try {
-      const { data: pieceData } = await supabase.from('pieces').select('full_description').eq('id', piece.id).single();
+      const { data: pieceData } = await supabase.from('pieces').select('full_description, description').eq('id', piece.id).single();
       const { data: drop } = await supabase.from('drops').select('description').eq('id', piece.drop_id).single();
       
       const result = await generateCopyFn({
         piece_name: piece.name,
-        drop_description: pieceData?.full_description || drop?.description || "",
+        drop_description: pieceData?.full_description || pieceData?.description || drop?.description || "",
         price_figura: piece.price_figura ? Number(piece.price_figura) : null,
         price_chaveiro: piece.price_chaveiro ? Number(piece.price_chaveiro) : null,
         available_as: piece.available_as
