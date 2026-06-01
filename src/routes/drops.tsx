@@ -730,7 +730,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
         name: editingDrop.drop_name || "",
         description: editingDrop.description || "",
         image_url: editingDrop.drop_image_url || "",
-        link: editingDrop.drop_link || ""
+        link: editingDrop.drop_link || "",
+        source: editingDrop.source || ""
       });
       // For editing, we don't show the pieces section in the same way or we keep it empty for new additions
       // The requirement says "pré-preenchido com os dados do drop selecionado"
