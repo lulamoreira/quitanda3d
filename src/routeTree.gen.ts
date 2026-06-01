@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as HistoricoRouteImport } from './routes/historico'
 import { Route as FinanceiroRouteImport } from './routes/financeiro'
+import { Route as DropsRouteImport } from './routes/drops'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -22,6 +23,11 @@ const HistoricoRoute = HistoricoRouteImport.update({
 const FinanceiroRoute = FinanceiroRouteImport.update({
   id: '/financeiro',
   path: '/financeiro',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DropsRoute = DropsRouteImport.update({
+  id: '/drops',
+  path: '/drops',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ConfiguracoesRoute = ConfiguracoesRouteImport.update({
@@ -38,12 +44,14 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/drops': typeof DropsRoute
   '/financeiro': typeof FinanceiroRoute
   '/historico': typeof HistoricoRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/drops': typeof DropsRoute
   '/financeiro': typeof FinanceiroRoute
   '/historico': typeof HistoricoRoute
 }
@@ -51,20 +59,28 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/configuracoes': typeof ConfiguracoesRoute
+  '/drops': typeof DropsRoute
   '/financeiro': typeof FinanceiroRoute
   '/historico': typeof HistoricoRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/configuracoes' | '/financeiro' | '/historico'
+  fullPaths: '/' | '/configuracoes' | '/drops' | '/financeiro' | '/historico'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/configuracoes' | '/financeiro' | '/historico'
-  id: '__root__' | '/' | '/configuracoes' | '/financeiro' | '/historico'
+  to: '/' | '/configuracoes' | '/drops' | '/financeiro' | '/historico'
+  id:
+    | '__root__'
+    | '/'
+    | '/configuracoes'
+    | '/drops'
+    | '/financeiro'
+    | '/historico'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ConfiguracoesRoute: typeof ConfiguracoesRoute
+  DropsRoute: typeof DropsRoute
   FinanceiroRoute: typeof FinanceiroRoute
   HistoricoRoute: typeof HistoricoRoute
 }
@@ -83,6 +99,13 @@ declare module '@tanstack/react-router' {
       path: '/financeiro'
       fullPath: '/financeiro'
       preLoaderRoute: typeof FinanceiroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/drops': {
+      id: '/drops'
+      path: '/drops'
+      fullPath: '/drops'
+      preLoaderRoute: typeof DropsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/configuracoes': {
@@ -105,9 +128,20 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ConfiguracoesRoute: ConfiguracoesRoute,
+  DropsRoute: DropsRoute,
   FinanceiroRoute: FinanceiroRoute,
   HistoricoRoute: HistoricoRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
