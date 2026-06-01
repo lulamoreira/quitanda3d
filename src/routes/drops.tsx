@@ -54,19 +54,19 @@ export default function DropsPage() {
   const queryClient = useQueryClient();
 
   const { data: drops, isLoading: isLoadingDrops, isError: isErrorDrops, error: errorDrops } = useQuery({
-    queryKey: [\"drops\"],
+    queryKey: ["drops"],
     refetchInterval: 30000,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from(\"drops\")
+        .from("drops")
         .select(`
           *,
           pieces(id, status)
         `)
-        .order(\"created_at\", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(1000);
       if (error) {
-        console.error(\"Supabase error fetching drops:\", error);
+        console.error("Supabase error fetching drops:", error);
         throw error;
       }
       return data;
