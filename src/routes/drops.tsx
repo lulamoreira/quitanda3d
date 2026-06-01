@@ -371,6 +371,12 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
                           Discord
                         </Badge>
                       )}
+                      {drop.source === 'makerworld' && (
+                        <Badge className="bg-green-500/10 text-green-600 border-green-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <Globe className="h-3 w-3 fill-current" />
+                          MakerWorld
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn("shrink-0", statusColor)}>
