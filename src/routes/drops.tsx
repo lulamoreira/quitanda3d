@@ -20,6 +20,8 @@ import {
   FileText,
   MoreVertical,
   Pencil,
+  HardDrive,
+  ChevronDown,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
