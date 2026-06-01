@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { 
   DollarSign, 
@@ -8,9 +7,7 @@ import {
   Plus, 
   Loader2, 
   ShoppingCart,
-  Calendar as CalendarIcon,
-  Search,
-  ArrowRight
+  Calendar as CalendarIcon
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -46,19 +43,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
-import { format, startOfWeek, startOfMonth, subDays, isWithinInterval } from "date-fns";
+import { format, startOfWeek, startOfMonth, isWithinInterval } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
-export const Route = createFileRoute("/financeiro")({
-  head: () => ({
-    meta: [
-      { title: "Financeiro | Quitanda3dSHOP" },
-    ],
-  }),
-  component: Financeiro,
-});
+export default function Financeiro() {
 
-function Financeiro() {
   const [dateFilter, setDateFilter] = useState("month");
   const queryClient = useQueryClient();
 

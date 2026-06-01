@@ -1,4 +1,3 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,17 +10,8 @@ import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { getStaggerDelay } from "@/lib/formatters";
 
+export default function Configuracoes() {
 
-export const Route = createFileRoute("/configuracoes")({
-  head: () => ({
-    meta: [
-      { title: "Configurações | Quitanda3dSHOP" },
-    ],
-  }),
-  component: Configuracoes,
-});
-
-function Configuracoes() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
     filament_price_per_kg: 80,

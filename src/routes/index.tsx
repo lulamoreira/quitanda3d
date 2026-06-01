@@ -1,9 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "react-router-dom";
 import { AppShell } from "@/components/AppShell";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { 
   LayoutDashboard, 
-  Loader2, 
   TrendingUp, 
   DollarSign, 
   Package, 
@@ -12,7 +10,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
+import { formatCurrency, getStaggerDelay } from "@/lib/formatters";
 import { 
   BarChart, 
   Bar, 
@@ -28,19 +26,10 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { subDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
+export default function Dashboard() {
 
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Dashboard | Quitanda3dSHOP" },
-      { name: "description", content: "Resumo de vendas e drops da Quitanda 3D" },
-    ],
-  }),
-  component: Dashboard,
-});
-
-function Dashboard() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard_stats"],
     queryFn: async () => {

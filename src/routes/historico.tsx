@@ -1,21 +1,17 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { 
   ClipboardList, 
-  Search, 
   Eye, 
   Copy, 
   Check, 
   Filter,
   Package,
-  Calendar as CalendarIcon
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
-import { Input } from "@/components/ui/input";
 import { 
   Select, 
   SelectContent, 
@@ -45,19 +41,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 
-export const Route = createFileRoute("/historico")({
-  head: () => ({
-    meta: [
-      { title: "Histórico | Quitanda3dSHOP" },
-    ],
-  }),
-  component: Historico,
-});
+export default function Historico() {
 
-function Historico() {
   const [platformFilter, setPlatformFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedListing, setSelectedListing] = useState<any>(null);
