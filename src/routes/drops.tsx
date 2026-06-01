@@ -280,10 +280,11 @@ function PiecesList({ pieces, isLoading, dropId }: any) {
 
   return (
     <div className="space-y-4">
-      {pieces?.map((piece: any) => (
-        <PieceCard key={piece.id} piece={piece} />
+      {pieces?.map((piece: any, index: number) => (
+        <PieceCard key={piece.id} piece={piece} index={index} />
       ))}
     </div>
+
   );
 }
 
