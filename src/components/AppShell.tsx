@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Package, 
   ClipboardList, 
   DollarSign, 
   Settings,
-  Menu,
-  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
@@ -25,6 +23,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [pendingPiecesCount, setPendingPiecesCount] = useState(0);
   const location = useLocation();
+
 
   useEffect(() => {
     const fetchPendingCount = async () => {
