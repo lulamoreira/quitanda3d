@@ -484,6 +484,7 @@ function PieceCard({ piece, index }: any) {
   const [priceChaveiro, setPriceChaveiro] = useState(piece.price_chaveiro || "");
   const [isCalcOpen, setIsCalcOpen] = useState(false);
   const [isPubOpen, setIsPubOpen] = useState(false);
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
   
   const queryClient = useQueryClient();
 
