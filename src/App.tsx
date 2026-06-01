@@ -7,9 +7,17 @@ import Financeiro from "./routes/financeiro";
 import Historico from "./routes/historico";
 import Configuracoes from "./routes/configuracoes";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 30000,
+      retry: 1,
+    },
+  },
+});
 
-function App() {
+export default function App() {
+
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
