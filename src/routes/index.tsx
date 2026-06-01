@@ -7,7 +7,8 @@ import {
   Package, 
   Percent,
   ArrowRight,
-  AlertCircle
+  AlertCircle,
+  Zap
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -207,7 +208,16 @@ export default function Dashboard() {
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted shrink-0">
                           {listing.pieces?.image_url ? (
-                            <img src={listing.pieces.image_url} alt="" className="w-full h-full object-cover" />
+                            <img 
+                              src={listing.pieces.image_url} 
+                              alt="" 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = "";
+                                (e.target as HTMLImageElement).onerror = null;
+                                (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class=\"w-full h-full bg-muted flex items-center justify-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-package w-full h-full p-2 opacity-20\"><path d=\"m7.5 4.27 9 5.15\"/><path d=\"M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg></div>';
+                              }}
+                            />
                           ) : (
                             <Package className="w-full h-full p-2 opacity-20" />
                           )}
@@ -264,13 +274,27 @@ export default function Dashboard() {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-lg overflow-hidden bg-muted shrink-0">
                             {drop.drop_image_url ? (
-                              <img src={drop.drop_image_url} alt="" className="w-full h-full object-cover" />
+                              <img 
+                                src={drop.drop_image_url} 
+                                alt="" 
+                                className="w-full h-full object-cover" 
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src = "";
+                                  (e.target as HTMLImageElement).onerror = null;
+                                  (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class=\"w-full h-full bg-muted flex items-center justify-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-package w-full h-full p-2 opacity-20\"><path d=\"m7.5 4.27 9 5.15\"/><path d=\"M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg></div>';
+                                }}
+                              />
                             ) : (
                               <Package className="w-full h-full p-2 opacity-20" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="font-bold text-sm truncate">{drop.drop_name}</p>
+                            <div className="flex items-center gap-1.5 truncate">
+                              <p className="font-bold text-sm truncate">{drop.drop_name}</p>
+                              {drop.source === 'discord' && (
+                                <Zap className="h-3 w-3 text-purple-600 fill-purple-600 shrink-0" />
+                              )}
+                            </div>
                             <Badge variant="outline" className={cn("text-[9px] uppercase font-bold h-4 px-1 mt-0.5", statusColor)}>
                               {statusLabel}
                             </Badge>

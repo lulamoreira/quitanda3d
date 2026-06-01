@@ -1,7 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { 
   Package, 
   Plus, 
@@ -12,6 +12,7 @@ import {
   Calculator,
   Check,
   AlertCircle,
+  Zap,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
@@ -55,6 +56,7 @@ export default function DropsPage() {
 
   const { data: drops, isLoading: isLoadingDrops, isError: isErrorDrops, error: errorDrops } = useQuery({
     queryKey: ["drops"],
+    refetchInterval: 30000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("drops")
@@ -71,6 +73,27 @@ export default function DropsPage() {
       return data;
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'drops',
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ['drops'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
 
 
   const { data: pieces, isLoading: isLoadingPieces, isError: isErrorPieces, error: errorPieces } = useQuery({
@@ -247,6 +270,11 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
                     src={drop.drop_image_url} 
                     alt={drop.drop_name} 
                     className="object-cover w-full h-full"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "";
+                      (e.target as HTMLImageElement).onerror = null;
+                      (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class=\"w-full h-full bg-muted flex items-center justify-center\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"32\" height=\"32\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-package h-8 w-8 text-muted-foreground opacity-20\"><path d=\"m7.5 4.27 9 5.15\"/><path d=\"M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg></div>';
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -257,7 +285,15 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
               <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-display font-semibold text-lg truncate">{drop.drop_name}</h3>
+                    <div className="flex items-center gap-2 truncate">
+                      <h3 className="font-display font-semibold text-lg truncate">{drop.drop_name}</h3>
+                      {drop.source === 'discord' && (
+                        <Badge className="bg-purple-500/10 text-purple-600 border-purple-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <Zap className="h-3 w-3 fill-current" />
+                          Discord
+                        </Badge>
+                      )}
+                    </div>
                     <Badge variant="outline" className={cn("shrink-0", statusColor)}>
                       {statusLabel}
                     </Badge>
