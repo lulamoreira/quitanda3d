@@ -1,15 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
-import { supabase } from "@/integrations/supabase/client";
 
 export const generateCopyFn = createServerFn({ method: "POST" })
-  .validator((data: { 
+  .handler(async ({ data }: { data: { 
     piece_name: string; 
     drop_description: string; 
     price_figura: number | null; 
     price_chaveiro: number | null; 
     available_as: string;
-  }) => data)
-  .handler(async ({ data }) => {
+  } }) => {
     const prompt = `Gere copy de vendas em português brasileiro para esta peça de impressão 3D:
 Peça: ${data.piece_name}
 Contexto: ${data.drop_description}
@@ -28,11 +26,6 @@ Retorne exatamente este JSON:
   "hashtags": "15 hashtags em português e inglês separadas por espaço"
 }`;
 
-    // Using Lovable AI Gateway via fetch to the API endpoint
-    // We can use the environment variable LOVABLE_API_KEY if needed, 
-    // but the gateway works natively if we use the right endpoint.
-    // Actually, for server-side in Lovable, we can use the project-internal gateway.
-    
     const response = await fetch('https://api.lovable.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
