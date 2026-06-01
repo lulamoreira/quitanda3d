@@ -71,10 +71,10 @@ import { generateCopyFn } from "@/lib/ai-service";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 export default function DropsPage() {
-
-
   const [selectedDropId, setSelectedDropId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [editingDrop, setEditingDrop] = useState<any>(null);
+  const [dropToDelete, setDropToDelete] = useState<any>(null);
   const queryClient = useQueryClient();
 
   const { data: drops, isLoading: isLoadingDrops, isError: isErrorDrops, error: errorDrops } = useQuery({
@@ -138,8 +138,29 @@ export default function DropsPage() {
     },
   });
 
+  const handleDeleteDrop = async () => {
+    if (!dropToDelete) return;
+    
+    try {
+      const { error } = await supabase
+        .from('drops')
+        .delete()
+        .eq('id', dropToDelete.id);
 
+      if (error) throw error;
 
+      toast.success("✓ Drop apagado com sucesso");
+      if (selectedDropId === dropToDelete.id) {
+        setSelectedDropId(null);
+      }
+      queryClient.invalidateQueries({ queryKey: ["drops"] });
+    } catch (error: any) {
+      console.error(error);
+      toast.error(`Erro ao apagar drop: ${error.message}`);
+    } finally {
+      setDropToDelete(null);
+    }
+  };
 
   return (
     <AppShell>
@@ -151,7 +172,11 @@ export default function DropsPage() {
           </div>
           <CreateDropDialog 
             isOpen={isCreateDialogOpen} 
-            onOpenChange={setIsCreateDialogOpen} 
+            onOpenChange={(open: boolean) => {
+              setIsCreateDialogOpen(open);
+              if (!open) setEditingDrop(null);
+            }} 
+            editingDrop={editingDrop}
           />
         </header>
 
@@ -172,6 +197,11 @@ export default function DropsPage() {
                 error={errorDrops}
                 selectedId={selectedDropId} 
                 onSelect={setSelectedDropId} 
+                onEdit={(drop: any) => {
+                  setEditingDrop(drop);
+                  setIsCreateDialogOpen(true);
+                }}
+                onDelete={(drop: any) => setDropToDelete(drop)}
               />
             </TabsContent>
             <TabsContent value="pieces" className="mt-4">
@@ -190,7 +220,9 @@ export default function DropsPage() {
         {/* Desktop 2-column layout */}
         <div className="hidden lg:grid grid-cols-2 gap-8 items-start">
           <section className="space-y-4">
-            <h2 className="text-xl font-semibold px-1">Lista de Drops</h2>
+            <div className="flex items-center justify-between px-1">
+              <h2 className="text-xl font-semibold">Lista de Drops</h2>
+            </div>
             <DropsList 
               drops={drops} 
               isLoading={isLoadingDrops} 
@@ -198,6 +230,11 @@ export default function DropsPage() {
               error={errorDrops}
               selectedId={selectedDropId} 
               onSelect={setSelectedDropId} 
+              onEdit={(drop: any) => {
+                setEditingDrop(drop);
+                setIsCreateDialogOpen(true);
+              }}
+              onDelete={(drop: any) => setDropToDelete(drop)}
             />
           </section>
 
@@ -214,6 +251,23 @@ export default function DropsPage() {
           </section>
         </div>
       </div>
+
+      <AlertDialog open={!!dropToDelete} onOpenChange={(open) => !open && setDropToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza que deseja apagar este drop?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Todas as peças e listagens vinculadas a este drop também serão apagadas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteDrop} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Apagar drop
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppShell>
   );
 }
