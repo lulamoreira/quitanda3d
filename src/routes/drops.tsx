@@ -553,6 +553,11 @@ function PieceCard({ piece, index }: any) {
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
+                  {piece.makerworld_url && (
+                    <a href={piece.makerworld_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors" title="Abrir no MakerWorld">
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
                   {piece.drive_url && (
                     <a href={piece.drive_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 flex items-center gap-1 transition-colors" title="Abrir no Google Drive">
                       <HardDrive className="h-3 w-3" />
