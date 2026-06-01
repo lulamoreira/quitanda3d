@@ -199,6 +199,7 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
   }
 
 
+
   if (!drops || drops.length === 0) {
     return (
       <Card className="border-dashed py-12 flex flex-col items-center justify-center text-center space-y-4">
