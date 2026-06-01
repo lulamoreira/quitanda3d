@@ -1,45 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo, useEffect } from "react";
+import { useState } from "react";
 import { 
   Package, 
   Plus, 
-  Trash2, 
   ExternalLink, 
   ChevronRight, 
   Loader2,
-  AlertCircle,
-  Calculator,
-  Upload,
-  Eye,
-  Copy,
-  Check,
 } from "lucide-react";
-import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
-
-function CheckCircle2(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-      <path d="m9 12 2 2 4-4" />
-    </svg>
-  );
-}
-
-
+import { formatDate, getStaggerDelay } from "@/lib/formatters";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -65,20 +35,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { generateCopyFn } from "@/lib/ai-service";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
-export const Route = createFileRoute("/drops")({
+export default function DropsPage() {
 
-  component: DropsPage,
-});
-
-function DropsPage() {
   const [selectedDropId, setSelectedDropId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
