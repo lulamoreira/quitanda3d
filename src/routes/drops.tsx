@@ -963,18 +963,22 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
         </DialogHeader>
         
         <Tabs defaultValue="manual" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="manual" className="gap-2">
               <FileText className="h-4 w-4" />
               Manual
             </TabsTrigger>
             <TabsTrigger value="import" className="gap-2">
               <History className="h-4 w-4" />
-              Importar por link
+              STLFLIX
             </TabsTrigger>
             <TabsTrigger value="drive" className="gap-2">
               <HardDrive className="h-4 w-4" />
               Arquivo próprio
+            </TabsTrigger>
+            <TabsTrigger value="makerworld" className="gap-2">
+              <Globe className="h-4 w-4" />
+              MakerWorld
             </TabsTrigger>
           </TabsList>
 
