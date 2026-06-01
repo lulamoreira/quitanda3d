@@ -1166,7 +1166,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
               <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Salvar Drop"}
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : editingDrop ? "Salvar alterações" : "Salvar Drop"}
               </Button>
             </DialogFooter>
           </TabsContent>
