@@ -13,6 +13,11 @@ import {
   Check,
   AlertCircle,
   Zap,
+  Download,
+  Copy,
+  Clock,
+  History,
+  FileText,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
@@ -406,6 +411,11 @@ function PieceCard({ piece, index }: any) {
     toggleMutation.mutate(checked);
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success("Copiado para a área de transferência!");
+  };
+
   const statusColors: any = {
     'pendente': 'bg-gray-100 text-gray-600',
     'publicado': 'bg-green-100 text-green-700',
@@ -427,8 +437,29 @@ function PieceCard({ piece, index }: any) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <h4 className="font-semibold truncate">{piece.name}</h4>
-              <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold", statusColors[piece.status] || 'bg-muted')}>
+              <div className="space-y-1 min-w-0">
+                <h4 className="font-semibold truncate">{piece.name}</h4>
+                <div className="flex flex-wrap items-center gap-2">
+                  {piece.stlflix_code && (
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted/80 h-5 px-1.5 text-[10px] gap-1 cursor-pointer" onClick={() => copyToClipboard(piece.stlflix_code)}>
+                      {piece.stlflix_code}
+                      <Copy className="h-2.5 w-2.5" />
+                    </Badge>
+                  )}
+                  {piece.stlflix_url && (
+                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors">
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {piece.print_time_mono && (
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5" />
+                      Mono: {piece.print_time_mono}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold shrink-0", statusColors[piece.status] || 'bg-muted')}>
                 {piece.status}
               </Badge>
             </div>
@@ -444,7 +475,7 @@ function PieceCard({ piece, index }: any) {
                   Vender esta peça
                 </Label>
               </div>
-              {piece.piece_url && (
+              {piece.piece_url && !piece.stlflix_url && (
                 <a href={piece.piece_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
                   <ExternalLink className="h-4 w-4" />
                 </a>
@@ -535,6 +566,9 @@ function PieceCard({ piece, index }: any) {
 function CreateDropDialog({ isOpen, onOpenChange }: any) {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
+  const [isScraping, setIsScraping] = useState(false);
+  const [stlflixUrl, setStlflixUrl] = useState("");
+  
   const [dropData, setDropData] = useState({
     name: "",
     description: "",
@@ -542,11 +576,35 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
     link: ""
   });
   const [pieces, setPieces] = useState<any[]>([
-    { name: "", image_url: "", piece_url: "", available_as: "ambos" }
+    { 
+      name: "", 
+      image_url: "", 
+      piece_url: "", 
+      available_as: "ambos",
+      full_description: "",
+      stlflix_code: "",
+      stlflix_slug: "",
+      print_time_mono: "",
+      print_time_multi: "",
+      height_cm: "",
+      source: ""
+    }
   ]);
 
   const addPiece = () => {
-    setPieces([...pieces, { name: "", image_url: "", piece_url: "", available_as: "ambos" }]);
+    setPieces([...pieces, { 
+      name: "", 
+      image_url: "", 
+      piece_url: "", 
+      available_as: "ambos",
+      full_description: "",
+      stlflix_code: "",
+      stlflix_slug: "",
+      print_time_mono: "",
+      print_time_multi: "",
+      height_cm: "",
+      source: ""
+    }]);
   };
 
   const removePiece = (index: number) => {
@@ -557,6 +615,63 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
     const newPieces = [...pieces];
     newPieces[index][field] = value;
     setPieces(newPieces);
+  };
+
+  const handleScrape = async () => {
+    if (!stlflixUrl) {
+      toast.error("Cole o link da peça na STLFLIX");
+      return;
+    }
+
+    setIsScraping(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('scrape-stlflix', {
+        body: { url: stlflixUrl }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        setDropData(prev => ({
+          ...prev,
+          name: data.title,
+          image_url: data.image_url,
+          link: data.stlflix_url
+        }));
+
+        setPieces([{
+          name: data.title,
+          image_url: data.image_url,
+          piece_url: data.stlflix_url,
+          available_as: "ambos",
+          full_description: data.description,
+          stlflix_code: data.stl_code,
+          stlflix_slug: data.slug,
+          print_time_mono: data.print_time_mono,
+          print_time_multi: data.print_time_multi,
+          height_cm: data.height_cm,
+          source: 'stlflix_import'
+        }]);
+        
+        toast.success("✓ Dados importados com sucesso");
+      } else if (data.requires_login) {
+        toast.warning("A STLFLIX requer login para acessar esta página. Preencha os dados abaixo manualmente.");
+        setDropData(prev => ({ ...prev, link: data.stlflix_url }));
+        setPieces([{
+          ...pieces[0],
+          piece_url: data.stlflix_url,
+          stlflix_slug: data.slug,
+          source: 'stlflix_import'
+        }]);
+      } else {
+        toast.error(data.error || "Erro ao importar dados");
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast.error(`Erro: ${error.message}`);
+    } finally {
+      setIsScraping(false);
+    }
   };
 
   const handleSave = async () => {
@@ -574,7 +689,8 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
           drop_name: dropData.name,
           description: dropData.description,
           drop_image_url: dropData.image_url,
-          drop_link: dropData.link
+          drop_link: dropData.link,
+          source: pieces[0]?.source || 'manual'
         })
         .select()
         .single();
@@ -585,8 +701,19 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
       const validPieces = pieces
         .filter(p => p.name.trim() !== "")
         .map(p => ({
-          ...p,
-          drop_id: drop.id
+          name: p.name,
+          image_url: p.image_url,
+          piece_url: p.piece_url,
+          available_as: p.available_as,
+          drop_id: drop.id,
+          full_description: p.full_description,
+          stlflix_code: p.stlflix_code,
+          stlflix_slug: p.stlflix_slug,
+          stlflix_url: p.piece_url,
+          print_time_mono: p.print_time_mono,
+          print_time_multi: p.print_time_multi,
+          height_cm: p.height_cm,
+          source: p.source || 'manual'
         }));
 
       if (validPieces.length > 0) {
@@ -601,7 +728,20 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
       onOpenChange(false);
       // Reset form
       setDropData({ name: "", description: "", image_url: "", link: "" });
-      setPieces([{ name: "", image_url: "", piece_url: "", available_as: "ambos" }]);
+      setPieces([{ 
+        name: "", 
+        image_url: "", 
+        piece_url: "", 
+        available_as: "ambos",
+        full_description: "",
+        stlflix_code: "",
+        stlflix_slug: "",
+        print_time_mono: "",
+        print_time_multi: "",
+        height_cm: "",
+        source: ""
+      }]);
+      setStlflixUrl("");
     } catch (error: any) {
       console.error(error);
       toast.error(`Erro ao salvar drop: ${error.message}`);
@@ -618,107 +758,147 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
           Novo Drop
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Cadastrar Novo Lançamento</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6 py-4">
-          {/* Dados do Drop */}
-          <div className="grid gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="drop-name">Nome do drop *</Label>
-              <Input 
-                id="drop-name" 
-                placeholder="Ex: Coleção Cyberpunk 2026" 
-                value={dropData.name}
-                onChange={e => setDropData({...dropData, name: e.target.value})}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="drop-desc">Descrição</Label>
-              <Textarea 
-                id="drop-desc" 
-                placeholder="Uma breve descrição sobre este lançamento..." 
-                value={dropData.description}
-                onChange={e => setDropData({...dropData, description: e.target.value})}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+        
+        <Tabs defaultValue="manual" className="w-full mt-4">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="manual" className="gap-2">
+              <FileText className="h-4 w-4" />
+              Manual
+            </TabsTrigger>
+            <TabsTrigger value="import" className="gap-2">
+              <History className="h-4 w-4" />
+              Importar por link
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="import" className="space-y-6">
+            <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
               <div className="space-y-2">
-                <Label htmlFor="drop-img">URL da imagem</Label>
-                <Input 
-                  id="drop-img" 
-                  placeholder="https://..." 
-                  value={dropData.image_url}
-                  onChange={e => setDropData({...dropData, image_url: e.target.value})}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="drop-link">Link STLFLIX</Label>
-                <Input 
-                  id="drop-link" 
-                  placeholder="https://..." 
-                  value={dropData.link}
-                  onChange={e => setDropData({...dropData, link: e.target.value})}
-                />
+                <Label>Link da peça na STLFLIX</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Cole o link da peça na STLFLIX (ex: platform.stlflix.com/product/popsi-kill)" 
+                    value={stlflixUrl}
+                    onChange={e => setStlflixUrl(e.target.value)}
+                  />
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 shrink-0" 
+                    onClick={handleScrape}
+                    disabled={isScraping}
+                  >
+                    {isScraping ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <Download className="h-4 w-4 mr-2" />
+                    )}
+                    Importar
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-t pt-4">
-              <h3 className="font-semibold text-lg">Peças deste drop</h3>
-              <Button type="button" variant="outline" size="sm" onClick={addPiece}>
-                <Plus className="mr-2 h-4 w-4" />
-                Adicionar peça
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              {pieces.map((piece, index) => (
-                <Card key={index} className="p-4 bg-accent/30 border-dashed relative">
-                  {pieces.length > 1 && (
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="absolute top-2 right-2 h-8 w-8 text-destructive hover:bg-destructive/10"
-                      onClick={() => removePiece(index)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                  <div className="grid gap-4">
+            {pieces[0]?.source === 'stlflix_import' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome da peça *</Label>
+                    <Input 
+                      value={dropData.name}
+                      onChange={e => {
+                        setDropData({...dropData, name: e.target.value});
+                        updatePiece(0, 'name', e.target.value);
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-xs">Nome da peça</Label>
+                      <Label>Código STL</Label>
+                      <div className="relative">
+                        <Input 
+                          value={pieces[0].stlflix_code}
+                          readOnly
+                          className="pr-10 bg-muted/50"
+                        />
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
+                          onClick={() => {
+                            navigator.clipboard.writeText(pieces[0].stlflix_code);
+                            toast.success("Copiado!");
+                          }}
+                        >
+                          <Copy className="h-4 w-4 text-muted-foreground" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>URL da imagem</Label>
                       <Input 
-                        placeholder="Nome da miniatura/objeto" 
-                        value={piece.name}
-                        onChange={e => updatePiece(index, 'name', e.target.value)}
+                        value={dropData.image_url}
+                        onChange={e => {
+                          setDropData({...dropData, image_url: e.target.value});
+                          updatePiece(0, 'image_url', e.target.value);
+                        }}
                       />
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-xs">URL Imagem</Label>
-                        <Input 
-                          placeholder="https://..." 
-                          value={piece.image_url}
-                          onChange={e => updatePiece(index, 'image_url', e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-xs">Link STLFLIX</Label>
-                        <Input 
-                          placeholder="https://..." 
-                          value={piece.piece_url}
-                          onChange={e => updatePiece(index, 'piece_url', e.target.value)}
-                        />
-                      </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Descrição completa</Label>
+                    <Textarea 
+                      className="min-h-[120px]"
+                      value={pieces[0].full_description}
+                      onChange={e => updatePiece(0, 'full_description', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs">Tempo Mono</Label>
+                      <Input 
+                        placeholder="Ex: 5h 30m" 
+                        value={pieces[0].print_time_mono}
+                        onChange={e => updatePiece(0, 'print_time_mono', e.target.value)}
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-xs">Disponível como</Label>
+                      <Label className="text-xs">Tempo Multi</Label>
+                      <Input 
+                        placeholder="Ex: 12h 15m" 
+                        value={pieces[0].print_time_multi}
+                        onChange={e => updatePiece(0, 'print_time_multi', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-xs">Altura (cm)</Label>
+                      <Input 
+                        placeholder="Ex: 15cm" 
+                        value={pieces[0].height_cm}
+                        onChange={e => updatePiece(0, 'height_cm', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Link STLFLIX</Label>
+                      <Input 
+                        value={dropData.link}
+                        readOnly
+                        className="bg-muted/50"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Disponível como</Label>
                       <Select 
-                        value={piece.available_as} 
-                        onValueChange={val => updatePiece(index, 'available_as', val)}
+                        value={pieces[0].available_as} 
+                        onValueChange={val => updatePiece(0, 'available_as', val)}
                       >
                         <SelectTrigger>
                           <SelectValue />
@@ -731,17 +911,141 @@ function CreateDropDialog({ isOpen, onOpenChange }: any) {
                       </Select>
                     </div>
                   </div>
-                </Card>
-              ))}
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isLoading} 
+                    className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
+                  >
+                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="manual" className="space-y-6">
+            <div className="grid gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="drop-name">Nome do drop *</Label>
+                <Input 
+                  id="drop-name" 
+                  placeholder="Ex: Coleção Cyberpunk 2026" 
+                  value={dropData.name}
+                  onChange={e => setDropData({...dropData, name: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="drop-desc">Descrição</Label>
+                <Textarea 
+                  id="drop-desc" 
+                  placeholder="Uma breve descrição sobre este lançamento..." 
+                  value={dropData.description}
+                  onChange={e => setDropData({...dropData, description: e.target.value})}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="drop-img">URL da imagem</Label>
+                  <Input 
+                    id="drop-img" 
+                    placeholder="https://..." 
+                    value={dropData.image_url}
+                    onChange={e => setDropData({...dropData, image_url: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="drop-link">Link STLFLIX</Label>
+                  <Input 
+                    id="drop-link" 
+                    placeholder="https://..." 
+                    value={dropData.link}
+                    onChange={e => setDropData({...dropData, link: e.target.value})}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
-          <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Salvar Drop"}
-          </Button>
-        </DialogFooter>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-t pt-4">
+                <h3 className="font-semibold text-lg">Peças deste drop</h3>
+                <Button type="button" variant="outline" size="sm" onClick={addPiece}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Adicionar peça
+                </Button>
+              </div>
+
+              <div className="space-y-4">
+                {pieces.map((piece, index) => (
+                  <Card key={index} className="p-4 bg-accent/30 border-dashed relative">
+                    {pieces.length > 1 && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="absolute top-2 right-2 h-8 w-8 text-destructive hover:bg-destructive/10"
+                        onClick={() => removePiece(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                    <div className="grid gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-xs">Nome da peça</Label>
+                        <Input 
+                          placeholder="Nome da miniatura/objeto" 
+                          value={piece.name}
+                          onChange={e => updatePiece(index, 'name', e.target.value)}
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs">URL Imagem</Label>
+                          <Input 
+                            placeholder="https://..." 
+                            value={piece.image_url}
+                            onChange={e => updatePiece(index, 'image_url', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">Link STLFLIX</Label>
+                          <Input 
+                            placeholder="https://..." 
+                            value={piece.piece_url}
+                            onChange={e => updatePiece(index, 'piece_url', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-xs">Disponível como</Label>
+                        <Select 
+                          value={piece.available_as} 
+                          onValueChange={val => updatePiece(index, 'available_as', val)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="figura">Figura</SelectItem>
+                            <SelectItem value="chaveiro">Chaveiro</SelectItem>
+                            <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => onOpenChange(false)}>Cancelar</Button>
+              <Button onClick={handleSave} disabled={isLoading} className="bg-primary hover:bg-primary/90">
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Salvar Drop"}
+              </Button>
+            </DialogFooter>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
@@ -875,11 +1179,12 @@ function PublicationDialog({ piece, disabled }: { piece: any, disabled: boolean 
     setStep('loading');
     
     try {
+      const { data: pieceData } = await supabase.from('pieces').select('full_description').eq('id', piece.id).single();
       const { data: drop } = await supabase.from('drops').select('description').eq('id', piece.drop_id).single();
       
       const result = await generateCopyFn({
         piece_name: piece.name,
-        drop_description: drop?.description || "",
+        drop_description: pieceData?.full_description || drop?.description || "",
         price_figura: piece.price_figura ? Number(piece.price_figura) : null,
         price_chaveiro: piece.price_chaveiro ? Number(piece.price_chaveiro) : null,
         available_as: piece.available_as

@@ -137,6 +137,8 @@ export type Database = {
           created_at: string | null
           drop_id: string | null
           filament_grams: number | null
+          full_description: string | null
+          height_cm: string | null
           id: string
           image_url: string | null
           name: string
@@ -144,7 +146,13 @@ export type Database = {
           price_chaveiro: number | null
           price_figura: number | null
           print_hours: number | null
+          print_time_mono: string | null
+          print_time_multi: string | null
+          source: string | null
           status: string | null
+          stlflix_code: string | null
+          stlflix_slug: string | null
+          stlflix_url: string | null
         }
         Insert: {
           active?: boolean | null
@@ -152,6 +160,8 @@ export type Database = {
           created_at?: string | null
           drop_id?: string | null
           filament_grams?: number | null
+          full_description?: string | null
+          height_cm?: string | null
           id?: string
           image_url?: string | null
           name: string
@@ -159,7 +169,13 @@ export type Database = {
           price_chaveiro?: number | null
           price_figura?: number | null
           print_hours?: number | null
+          print_time_mono?: string | null
+          print_time_multi?: string | null
+          source?: string | null
           status?: string | null
+          stlflix_code?: string | null
+          stlflix_slug?: string | null
+          stlflix_url?: string | null
         }
         Update: {
           active?: boolean | null
@@ -167,6 +183,8 @@ export type Database = {
           created_at?: string | null
           drop_id?: string | null
           filament_grams?: number | null
+          full_description?: string | null
+          height_cm?: string | null
           id?: string
           image_url?: string | null
           name?: string
@@ -174,7 +192,13 @@ export type Database = {
           price_chaveiro?: number | null
           price_figura?: number | null
           print_hours?: number | null
+          print_time_mono?: string | null
+          print_time_multi?: string | null
+          source?: string | null
           status?: string | null
+          stlflix_code?: string | null
+          stlflix_slug?: string | null
+          stlflix_url?: string | null
         }
         Relationships: [
           {
