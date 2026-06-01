@@ -272,7 +272,7 @@ export default function DropsPage() {
   );
 }
 
-function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: any) {
+function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onEdit, onDelete }: any) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -297,8 +297,6 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
       </div>
     );
   }
-
-
 
   if (!drops || drops.length === 0) {
     return (
