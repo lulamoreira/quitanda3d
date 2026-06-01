@@ -11,8 +11,10 @@ import {
   Trash2,
   Calculator,
   Check,
+  AlertCircle,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
+
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -51,7 +53,7 @@ export default function DropsPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: drops, isLoading: isLoadingDrops } = useQuery({
+  const { data: drops, isLoading: isLoadingDrops, isError: isErrorDrops, error: errorDrops } = useQuery({
     queryKey: ["drops"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -62,12 +64,16 @@ export default function DropsPage() {
         `)
         .order("created_at", { ascending: false })
         .limit(1000);
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error fetching drops:", error);
+        throw error;
+      }
       return data;
     },
   });
 
-  const { data: pieces, isLoading: isLoadingPieces } = useQuery({
+
+  const { data: pieces, isLoading: isLoadingPieces, isError: isErrorPieces, error: errorPieces } = useQuery({
     queryKey: ["pieces", selectedDropId],
     enabled: !!selectedDropId,
     queryFn: async () => {
@@ -78,10 +84,15 @@ export default function DropsPage() {
         .eq("drop_id", selectedDropId)
         .order("created_at", { ascending: true })
         .limit(1000);
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error fetching pieces:", error);
+        throw error;
+      }
       return data;
     },
   });
+
+
 
 
   return (
@@ -108,9 +119,11 @@ export default function DropsPage() {
               </TabsTrigger>
             </TabsList>
             <TabsContent value="drops" className="mt-4">
-              <DropsList 
+            <DropsList 
                 drops={drops} 
                 isLoading={isLoadingDrops} 
+                isError={isErrorDrops}
+                error={errorDrops}
                 selectedId={selectedDropId} 
                 onSelect={setSelectedDropId} 
               />
@@ -119,8 +132,11 @@ export default function DropsPage() {
               <PiecesList 
                 pieces={pieces} 
                 isLoading={isLoadingPieces} 
+                isError={isErrorPieces}
+                error={errorPieces}
                 dropId={selectedDropId} 
               />
+
             </TabsContent>
           </Tabs>
         </div>
@@ -132,6 +148,8 @@ export default function DropsPage() {
             <DropsList 
               drops={drops} 
               isLoading={isLoadingDrops} 
+              isError={isErrorDrops}
+              error={errorDrops}
               selectedId={selectedDropId} 
               onSelect={setSelectedDropId} 
             />
@@ -142,8 +160,11 @@ export default function DropsPage() {
             <PiecesList 
               pieces={pieces} 
               isLoading={isLoadingPieces} 
+              isError={isErrorPieces}
+              error={errorPieces}
               dropId={selectedDropId} 
             />
+
           </section>
         </div>
       </div>
@@ -151,7 +172,7 @@ export default function DropsPage() {
   );
 }
 
-function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
+function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: any) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -161,6 +182,23 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
       </div>
     );
   }
+
+  if (isError) {
+    return (
+      <div className="p-8 border border-destructive/20 bg-destructive/5 rounded-xl text-center flex flex-col items-center space-y-3">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <div>
+          <p className="text-sm text-destructive font-bold">Erro ao carregar drops</p>
+          <p className="text-xs text-destructive/70 mt-1 max-w-xs">{error?.message || "Ocorreu um erro ao buscar os dados do Supabase."}</p>
+        </div>
+        <Button size="sm" variant="outline" onClick={() => window.location.reload()} className="h-8">
+          Tentar novamente
+        </Button>
+      </div>
+    );
+  }
+
+
 
   if (!drops || drops.length === 0) {
     return (
@@ -242,7 +280,7 @@ function DropsList({ drops, isLoading, selectedId, onSelect }: any) {
   );
 }
 
-function PiecesList({ pieces, isLoading, dropId }: any) {
+function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
   if (!dropId) {
     return (
       <Card className="border-dashed py-24 flex flex-col items-center justify-center text-center space-y-4">
@@ -266,6 +304,33 @@ function PiecesList({ pieces, isLoading, dropId }: any) {
       </div>
     );
   }
+
+  if (isError) {
+    return (
+      <div className="p-8 border border-destructive/20 bg-destructive/5 rounded-xl text-center flex flex-col items-center space-y-3">
+        <AlertCircle className="h-10 w-10 text-destructive" />
+        <div>
+          <p className="text-sm text-destructive font-bold">Erro ao carregar peças</p>
+          <p className="text-xs text-destructive/70 mt-1">{error?.message || "Erro ao buscar peças."}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!pieces || pieces.length === 0) {
+    return (
+      <Card className="border-dashed py-24 flex flex-col items-center justify-center text-center space-y-4">
+        <div className="p-4 rounded-full bg-accent/50">
+          <Package className="h-10 w-10 text-muted-foreground opacity-30" />
+        </div>
+        <div className="space-y-1">
+          <p className="font-semibold text-lg">Nenhuma peça neste drop</p>
+          <p className="text-sm text-muted-foreground max-w-xs mx-auto">Este lançamento ainda não possui peças cadastradas.</p>
+        </div>
+      </Card>
+    );
+  }
+
 
   return (
     <div className="space-y-4">

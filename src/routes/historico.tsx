@@ -6,10 +6,12 @@ import {
   Check, 
   Filter,
   Package,
+  AlertCircle
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+
 
 import { supabase } from "@/integrations/supabase/client";
 import { 
@@ -49,7 +51,7 @@ export default function Historico() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedListing, setSelectedListing] = useState<any>(null);
 
-  const { data: listings, isLoading } = useQuery({
+  const { data: listings, isLoading, isError, error } = useQuery({
     queryKey: ["listings", platformFilter, statusFilter],
     queryFn: async () => {
       let query = supabase
@@ -75,7 +77,21 @@ export default function Historico() {
       if (error) throw error;
       return data;
     },
+    retry: 1,
   });
+
+  if (isError) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4 text-center">
+          <ClipboardList className="h-10 w-10 text-destructive opacity-50" />
+          <h2 className="text-xl font-bold text-destructive">Erro no Histórico</h2>
+          <p className="text-sm text-muted-foreground">{(error as any)?.message || "Erro ao buscar publicações."}</p>
+        </div>
+      </AppShell>
+    );
+  }
+
 
   return (
     <AppShell>

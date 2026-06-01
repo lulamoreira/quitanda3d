@@ -7,12 +7,14 @@ import {
   Plus, 
   Loader2, 
   ShoppingCart,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  AlertCircle
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency, getStaggerDelay } from "@/lib/formatters";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
@@ -51,7 +53,7 @@ export default function Financeiro() {
   const [dateFilter, setDateFilter] = useState("month");
   const queryClient = useQueryClient();
 
-  const { data: sales, isLoading } = useQuery({
+  const { data: sales, isLoading, isError, error } = useQuery({
     queryKey: ["sales"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -66,7 +68,21 @@ export default function Financeiro() {
       return data;
     },
     staleTime: 30000,
+    retry: 1,
   });
+
+  if (isError) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4 text-center">
+          <DollarSign className="h-10 w-10 text-destructive opacity-50" />
+          <h2 className="text-xl font-bold text-destructive">Erro no Financeiro</h2>
+          <p className="text-sm text-muted-foreground">{(error as any)?.message || "Erro ao buscar vendas."}</p>
+        </div>
+      </AppShell>
+    );
+  }
+
 
   const filteredSales = useMemo(() => {
     if (!sales) return [];
@@ -88,6 +104,7 @@ export default function Financeiro() {
   }, [sales, dateFilter]);
 
   const totals = useMemo(() => {
+    if (!filteredSales) return { revenue: 0, commissions: 0, costs: 0, profit: 0 };
     return filteredSales.reduce((acc, sale) => {
       const revenue = Number(sale.gross_revenue) || 0;
       const commission = (revenue * (Number(sale.commission_rate) || 0)) / 100;
@@ -102,6 +119,7 @@ export default function Financeiro() {
       };
     }, { revenue: 0, commissions: 0, costs: 0, profit: 0 });
   }, [filteredSales]);
+
 
   return (
     <AppShell>

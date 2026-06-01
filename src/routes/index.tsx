@@ -6,7 +6,8 @@ import {
   DollarSign, 
   Package, 
   Percent,
-  ArrowRight
+  ArrowRight,
+  AlertCircle
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,8 +30,7 @@ import { ptBR } from "date-fns/locale";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 export default function Dashboard() {
-
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, error } = useQuery({
     queryKey: ["dashboard_stats"],
     queryFn: async () => {
       const [pendingCount, dropsCount, salesData, lastListings, lastDrops] = await Promise.all([
@@ -40,6 +40,12 @@ export default function Dashboard() {
         supabase.from('listings').select('*, pieces(name, image_url)').order('published_at', { ascending: false }).limit(5),
         supabase.from('drops').select('*, pieces(id, status)').order('created_at', { ascending: false }).limit(5)
       ]);
+
+      if (pendingCount.error) throw pendingCount.error;
+      if (dropsCount.error) throw dropsCount.error;
+      if (salesData.error) throw salesData.error;
+      if (lastListings.error) throw lastListings.error;
+      if (lastDrops.error) throw lastDrops.error;
 
       const totalRevenue = salesData.data?.reduce((acc, curr) => acc + Number(curr.gross_revenue), 0) || 0;
       const totalProfit = salesData.data?.reduce((acc, curr) => acc + Number(curr.net_profit), 0) || 0;
@@ -68,7 +74,32 @@ export default function Dashboard() {
       };
     },
     staleTime: 30000,
+    retry: 1,
   });
+
+  if (isError) {
+    return (
+      <AppShell>
+        <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+          <div className="p-4 rounded-full bg-destructive/10">
+            <AlertCircle className="h-10 w-10 text-destructive" />
+          </div>
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-destructive">Erro ao carregar dashboard</h2>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              {(error as any)?.message || "Ocorreu um erro inesperado ao buscar os dados."}
+            </p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell>
@@ -170,7 +201,7 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {isLoading ? (
                   [1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)
-                ) : stats?.lastListings.length ? (
+                ) : stats?.lastListings && stats.lastListings.length > 0 ? (
                   stats.lastListings.map((listing: any) => (
                     <Card key={listing.id} className="p-3 border shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex items-center gap-3">
@@ -195,7 +226,9 @@ export default function Dashboard() {
                     </Card>
                   ))
                 ) : (
-                  <p className="text-sm text-center text-muted-foreground py-4 italic">Sem publicações recentes</p>
+                  <Card className="p-6 border-dashed text-center">
+                    <p className="text-sm text-muted-foreground italic">Sem publicações recentes</p>
+                  </Card>
                 )}
                 <Link to="/historico" className="flex items-center justify-center gap-1 text-xs text-primary font-bold hover:underline py-1">
                   Ver todo o histórico <ArrowRight className="h-3 w-3" />
@@ -211,7 +244,7 @@ export default function Dashboard() {
               <div className="space-y-3">
                 {isLoading ? (
                   [1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)
-                ) : stats?.lastDrops.length ? (
+                ) : stats?.lastDrops && stats.lastDrops.length > 0 ? (
                   stats.lastDrops.map((drop: any) => {
                     const totalPieces = drop.pieces?.length || 0;
                     const publishedCount = drop.pieces?.filter((p: any) => p.status === 'publicado').length || 0;
@@ -250,7 +283,9 @@ export default function Dashboard() {
                     );
                   })
                 ) : (
-                  <p className="text-sm text-center text-muted-foreground py-4 italic">Sem drops recentes</p>
+                  <Card className="p-6 border-dashed text-center">
+                    <p className="text-sm text-muted-foreground italic">Sem drops recentes</p>
+                  </Card>
                 )}
                 <Link to="/drops" className="flex items-center justify-center gap-1 text-xs text-primary font-bold hover:underline py-1">
                   Ver todos os drops <ArrowRight className="h-3 w-3" />
@@ -289,6 +324,3 @@ function SummaryCard({ title, value, icon: Icon, color, highlight, isLoading, is
     </Card>
   );
 }
-
-
-

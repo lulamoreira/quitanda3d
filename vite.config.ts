@@ -18,4 +18,9 @@ export default defineConfig({
     host: "::",
     port: 8080,
   },
+  // Ensure env variables are exposed
+  define: {
+    'process.env': {}
+  }
 });
+
