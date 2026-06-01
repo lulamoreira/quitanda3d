@@ -1266,7 +1266,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                     value={pieces[0].image_url}
                     onChange={e => {
                       updatePiece(0, 'image_url', e.target.value);
-                      setDropData({...dropData, image_url: e.target.value});
+                      setDropData({...dropData, image_url: e.target.value, source: 'manual'});
+                      updatePiece(0, 'source', 'manual');
                     }}
                   />
                 </div>
