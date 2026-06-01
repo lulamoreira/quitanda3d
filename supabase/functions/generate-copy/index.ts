@@ -44,7 +44,7 @@ Retorne exatamente este JSON:
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: "claude-3-5-sonnet-20240620", // Actual current model identifier for Claude 3.5 Sonnet
+        model: "claude-haiku-4-5-20251001",
         max_tokens: 1500,
         system: "Você é o copywriter da Quitanda 3D, loja paulistana de impressão 3D premium com BambuLab X1C Carbon. Responda APENAS com JSON válido. Sem markdown, sem texto antes ou depois do JSON.",
         messages: [{ role: "user", content: prompt }]
