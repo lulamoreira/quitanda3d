@@ -288,7 +288,7 @@ function PiecesList({ pieces, isLoading, dropId }: any) {
   );
 }
 
-function PieceCard({ piece }: any) {
+function PieceCard({ piece, index }: any) {
   const [isSelling, setIsSelling] = useState(piece.active || false);
   const [availableAs, setAvailableAs] = useState(piece.available_as || 'ambos');
   const [priceFigura, setPriceFigura] = useState(piece.price_figura || "");
