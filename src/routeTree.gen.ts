@@ -14,7 +14,6 @@ import { Route as FinanceiroRouteImport } from './routes/financeiro'
 import { Route as DropsRouteImport } from './routes/drops'
 import { Route as ConfiguracoesRouteImport } from './routes/configuracoes'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ApiGenerateCopyRouteImport } from './routes/api/generate-copy'
 
 const HistoricoRoute = HistoricoRouteImport.update({
   id: '/historico',
@@ -41,11 +40,6 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiGenerateCopyRoute = ApiGenerateCopyRouteImport.update({
-  id: '/api/generate-copy',
-  path: '/api/generate-copy',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -53,7 +47,6 @@ export interface FileRoutesByFullPath {
   '/drops': typeof DropsRoute
   '/financeiro': typeof FinanceiroRoute
   '/historico': typeof HistoricoRoute
-  '/api/generate-copy': typeof ApiGenerateCopyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -61,7 +54,6 @@ export interface FileRoutesByTo {
   '/drops': typeof DropsRoute
   '/financeiro': typeof FinanceiroRoute
   '/historico': typeof HistoricoRoute
-  '/api/generate-copy': typeof ApiGenerateCopyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -70,25 +62,12 @@ export interface FileRoutesById {
   '/drops': typeof DropsRoute
   '/financeiro': typeof FinanceiroRoute
   '/historico': typeof HistoricoRoute
-  '/api/generate-copy': typeof ApiGenerateCopyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/configuracoes'
-    | '/drops'
-    | '/financeiro'
-    | '/historico'
-    | '/api/generate-copy'
+  fullPaths: '/' | '/configuracoes' | '/drops' | '/financeiro' | '/historico'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/configuracoes'
-    | '/drops'
-    | '/financeiro'
-    | '/historico'
-    | '/api/generate-copy'
+  to: '/' | '/configuracoes' | '/drops' | '/financeiro' | '/historico'
   id:
     | '__root__'
     | '/'
@@ -96,7 +75,6 @@ export interface FileRouteTypes {
     | '/drops'
     | '/financeiro'
     | '/historico'
-    | '/api/generate-copy'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -105,7 +83,6 @@ export interface RootRouteChildren {
   DropsRoute: typeof DropsRoute
   FinanceiroRoute: typeof FinanceiroRoute
   HistoricoRoute: typeof HistoricoRoute
-  ApiGenerateCopyRoute: typeof ApiGenerateCopyRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -145,13 +122,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/generate-copy': {
-      id: '/api/generate-copy'
-      path: '/api/generate-copy'
-      fullPath: '/api/generate-copy'
-      preLoaderRoute: typeof ApiGenerateCopyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -161,8 +131,17 @@ const rootRouteChildren: RootRouteChildren = {
   DropsRoute: DropsRoute,
   FinanceiroRoute: FinanceiroRoute,
   HistoricoRoute: HistoricoRoute,
-  ApiGenerateCopyRoute: ApiGenerateCopyRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
