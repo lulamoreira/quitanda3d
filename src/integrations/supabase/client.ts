@@ -10,7 +10,10 @@ function createSupabaseClient() {
 
 
 
+  console.log('[Supabase] Initializing client with:', { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY: SUPABASE_PUBLISHABLE_KEY ? 'Set' : 'Missing' });
+
   if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+
     const missing = [
       ...(!SUPABASE_URL ? ['SUPABASE_URL'] : []),
       ...(!SUPABASE_PUBLISHABLE_KEY ? ['SUPABASE_PUBLISHABLE_KEY'] : []),
