@@ -614,6 +614,42 @@ function PieceCard({ piece, index }: any) {
                     )}
                   </div>
                 )}
+                
+                <div className="mt-2 space-y-1">
+                  {piece.stlflix_url && (
+                    <a 
+                      href={piece.stlflix_url} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-[11px] text-orange-600 hover:text-orange-700 flex items-center gap-1.5 transition-colors font-medium"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Abrir na STLFLIX
+                    </a>
+                  )}
+                  {piece.makerworld_url && (
+                    <a 
+                      href={piece.makerworld_url} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-[11px] text-green-600 hover:text-green-700 flex items-center gap-1.5 transition-colors font-medium"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Abrir no MakerWorld
+                    </a>
+                  )}
+                  {piece.drive_url && (
+                    <a 
+                      href={piece.drive_url} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-[11px] text-gray-600 hover:text-gray-700 flex items-center gap-1.5 transition-colors font-medium"
+                    >
+                      <HardDrive className="h-3 w-3" />
+                      Arquivo para impressão
+                    </a>
+                  )}
+                </div>
               </div>
               <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold shrink-0", statusColors[piece.status] || 'bg-muted')}>
                 {piece.status}
