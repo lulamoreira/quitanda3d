@@ -369,9 +369,31 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
                         </Badge>
                       )}
                     </div>
-                    <Badge variant="outline" className={cn("shrink-0", statusColor)}>
-                      {statusLabel}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className={cn("shrink-0", statusColor)}>
+                        {statusLabel}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                          <DropdownMenuItem onClick={() => onEdit(drop)} className="gap-2">
+                            <Pencil className="h-4 w-4" />
+                            Editar drop
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => onDelete(drop)} 
+                            className="gap-2 text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Apagar drop
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {formatDate(drop.created_at)}
