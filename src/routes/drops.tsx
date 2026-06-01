@@ -23,7 +23,9 @@ import {
   HardDrive,
   ChevronDown,
   Globe,
+  CheckCircle2,
 } from "lucide-react";
+
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
 
