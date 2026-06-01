@@ -129,7 +129,7 @@ function Financeiro() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <SummaryCard 
             title="Receita Bruta" 
-            value={totals.revenue} 
+            value={Number(totals.revenue)} 
             icon={TrendingUp} 
             color="text-blue-500" 
             index={0} 
