@@ -14,7 +14,7 @@ serve(async (req) => {
     const { url } = await req.json();
 
     if (!url || !url.includes("platform.stlflix.com/product/")) {
-      throw new Error("URL inválida. Use uma URL de produto da STLFLIX como: platform.stlflix.com/product/nome-da-peca");
+      throw new Error("URL inválida. Use uma URL como: platform.stlflix.com/product/nome-da-peca");
     }
 
     const slug = url.split("/product/")[1].split("?")[0].trim();
@@ -28,51 +28,37 @@ serve(async (req) => {
     });
 
     const html = await response.text();
-    const requiresLogin = html.includes("login") && html.includes("password") && !html.includes("drop");
 
-    if (!response.ok || requiresLogin) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          requires_login: true,
-          slug,
-          stlflix_url: url,
-          message: "Página requer login. Preencha os dados manualmente."
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    const nextDataMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>/s);
+    if (!nextDataMatch) {
+      throw new Error("Não foi possível ler os dados da página. Verifique se você está logado na STLFLIX.");
     }
 
-    const titleMatch = html.match(/<h1[^>]*>([^<]+)<\/h1>/) ||
-                       html.match(/og:title[^>]*content="([^"]+)"/) ||
-                       html.match(/<title>([^<]+)<\/title>/);
-    const title = titleMatch ? titleMatch[1].replace(" | STLFLIX", "").trim() : slug;
+    const nextData = JSON.parse(nextDataMatch[1]);
+    const product = nextData?.props?.pageProps?.product || nextData?.props?.pageProps;
 
-    const stlCodeMatch = html.match(/STL\s*#(\d+)/);
-    const stlCode = stlCodeMatch ? `#${stlCodeMatch[1]}` : "";
+    if (!product || !product.name) {
+      throw new Error("Dados do produto não encontrados. A página pode exigir login.");
+    }
 
-    const imageMatch = html.match(/og:image[^>]*content="([^"]+)"/) ||
-                       html.match(/<img[^>]*src="(https[^"]+(?:jpg|png|webp))"/);
-    const imageUrl = imageMatch ? imageMatch[1] : "";
+    const title = product.name || "";
+    const stlCode = product.id ? `#${product.id}` : "";
+    const description = product.description
+      ? product.description.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim()
+      : "";
 
-    const monoMatch = html.match(/Monocolor[^:]*:\s*([^\n<*]+)/i);
+    const thumbnail = product.thumbnail?.data?.attributes?.url || "";
+    const galleryImages = product.gallery?.data?.map((img: any) => img?.attributes?.url).filter(Boolean) || [];
+    const imageUrl = thumbnail || galleryImages[0] || "";
+
+    const monoMatch = description.match(/Monocolor[^:]*:\s*([^\n<*]+)/i);
     const printTimeMono = monoMatch ? monoMatch[1].trim() : "";
 
-    const multiMatch = html.match(/Multicolor[^:]*:\s*([^\n<*]+)/i);
+    const multiMatch = description.match(/Multicolor[^:]*:\s*([^\n<*]+)/i);
     const printTimeMulti = multiMatch ? multiMatch[1].trim() : "";
 
-    const heightMatch = html.match(/Altura[^:]*:\s*([\d,.]+\s*cm)/i);
+    const heightMatch = description.match(/Altura[^:]*:\s*([\d,.]+\s*cm)/i);
     const height = heightMatch ? heightMatch[1].trim() : "";
-
-    const descPatterns = [
-      /class="[^"]*description[^"]*"[^>]*>([^<]{50,500})/i,
-      /<p[^>]*>([A-ZÀ-ú][^<]{50,400})<\/p>/,
-    ];
-    let description = "";
-    for (const pattern of descPatterns) {
-      const match = html.match(pattern);
-      if (match) { description = match[1].trim(); break; }
-    }
 
     return new Response(
       JSON.stringify({
@@ -89,7 +75,7 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
-  } catch (error) {
+  } catch (error: any) {
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
