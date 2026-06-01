@@ -842,62 +842,74 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
     setPieces(newPieces);
   };
 
-  const handleScrape = async () => {
-    if (!stlflixUrl) {
-      toast.error("Cole o link da peça na STLFLIX");
+  const handleExtractSTLFLIX = () => {
+    if (!pastedHtml) {
+      toast.error("Cole o código-fonte da página");
       return;
     }
 
-    setIsScraping(true);
     try {
-      const { data, error } = await supabase.functions.invoke('scrape-stlflix', {
-        body: { url: stlflixUrl }
-      });
-
-      if (error) throw error;
-
-      if (data.success) {
-        setDropData(prev => ({
-          ...prev,
-          name: data.title,
-          image_url: data.image_url,
-          link: data.stlflix_url
-        }));
-
-        setPieces([{
-          name: data.title,
-          image_url: data.image_url,
-          piece_url: data.stlflix_url,
-          available_as: "ambos",
-          full_description: data.description,
-          stlflix_code: data.stl_code,
-          stlflix_slug: data.slug,
-          print_time_mono: data.print_time_mono,
-          print_time_multi: data.print_time_multi,
-          height_cm: data.height_cm,
-          source: 'stlflix_import'
-        }]);
-        
-        toast.success("✓ Dados importados com sucesso");
-      } else if (data.requires_login) {
-        toast.warning("A STLFLIX requer login para acessar esta página. Preencha os dados abaixo manualmente.");
-        setDropData(prev => ({ ...prev, link: data.stlflix_url }));
-        setPieces([{
-          ...pieces[0],
-          piece_url: data.stlflix_url,
-          stlflix_slug: data.slug,
-          source: 'stlflix_import'
-        }]);
-      } else {
-        toast.error(data.error || "Erro ao importar dados");
+      const scriptTag = pastedHtml.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+      if (!scriptTag) {
+        toast.error("Não foi possível encontrar o bloco de dados no código colado. Certifique-se de copiar o código-fonte completo (CTRL+U).");
+        return;
       }
-    } catch (error: any) {
-      console.error(error);
-      toast.error(`Erro: ${error.message}`);
-    } finally {
-      setIsScraping(false);
+
+      const jsonData = JSON.parse(scriptTag[1]);
+      const product = jsonData.props?.pageProps?.product;
+
+      if (!product) {
+        toast.error("Dados da peça não encontrados no JSON.");
+        return;
+      }
+
+      const name = product.name || "";
+      const stlCode = product.id ? `#${product.id}` : "";
+      const description = (product.description || "").replace(/<[^>]*>/g, ' ');
+      const thumbnail = product.thumbnail?.data?.attributes?.url || "";
+      const gallery = product.gallery?.data?.map((item: any) => item.attributes.url).filter(Boolean) || [];
+      const dropTitle = product.drop?.data?.attributes?.title || "";
+
+      // Regex extraction
+      const monoMatch = description.match(/Monocolor:\s*([^\n<]*)/i);
+      const multiMatch = description.match(/Multiparts:\s*([^\n<]*)/i);
+      const heightMatch = description.match(/Altura:\s*([^\n<]*)/i);
+
+      const monoTime = monoMatch ? monoMatch[1].trim() : "";
+      const multiTime = multiMatch ? multiMatch[1].trim() : "";
+      const height = heightMatch ? heightMatch[1].trim() : "";
+
+      setDropData(prev => ({
+        ...prev,
+        name: name,
+        image_url: thumbnail,
+        link: stlflixUrl,
+        source: 'stlflix_import'
+      }));
+
+      setPieces([{
+        ...pieces[0],
+        name: name,
+        image_url: thumbnail,
+        piece_url: stlflixUrl,
+        available_as: "ambos",
+        full_description: description.trim(),
+        stlflix_code: stlCode,
+        print_time_mono: monoTime,
+        print_time_multi: multiTime,
+        height_cm: height,
+        source: 'stlflix_import'
+      }]);
+
+      setStlflixGallery(gallery.slice(0, 3));
+      setStlflixDropTitle(dropTitle);
+      toast.success("✓ Dados extraídos com sucesso");
+    } catch (error) {
+      console.error("Extraction error:", error);
+      toast.error("Erro ao processar os dados. Verifique se o código colado está correto.");
     }
   };
+
 
   const handleSave = async () => {
     if (!dropData.name) {
