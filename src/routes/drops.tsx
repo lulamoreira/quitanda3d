@@ -859,7 +859,7 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             description: dropData.description,
             drop_image_url: dropData.image_url,
             drop_link: dropData.link,
-            source: pieces[0]?.source || 'manual'
+            source: dropData.source || pieces[0]?.source || 'manual'
           })
           .select()
           .single();
