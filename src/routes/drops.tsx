@@ -84,11 +84,14 @@ export default function DropsPage() {
         .eq("drop_id", selectedDropId)
         .order("created_at", { ascending: true })
         .limit(1000);
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error fetching pieces:", error);
+        throw error;
+      }
       return data;
     },
-    retry: 1,
   });
+
 
 
 
