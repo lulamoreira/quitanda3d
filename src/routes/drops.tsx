@@ -22,6 +22,7 @@ import {
   Pencil,
   HardDrive,
   ChevronDown,
+  Globe,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
@@ -370,6 +371,12 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
                           Discord
                         </Badge>
                       )}
+                      {drop.source === 'makerworld' && (
+                        <Badge className="bg-green-500/10 text-green-600 border-green-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <Globe className="h-3 w-3 fill-current" />
+                          MakerWorld
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn("shrink-0", statusColor)}>
@@ -543,6 +550,11 @@ function PieceCard({ piece, index }: any) {
                   )}
                   {piece.stlflix_url && (
                     <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors" title="Abrir na STLFLIX">
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )}
+                  {piece.makerworld_url && (
+                    <a href={piece.makerworld_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors" title="Abrir no MakerWorld">
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
@@ -720,7 +732,9 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       drive_url: "",
       material: "",
       print_notes: "",
-      print_time_estimated: ""
+      print_time_estimated: "",
+      makerworld_url: "",
+      makerworld_model_id: ""
     }
   ]);
 
@@ -756,7 +770,9 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
       drive_url: "",
       material: "",
       print_notes: "",
-      print_time_estimated: ""
+      print_time_estimated: "",
+      makerworld_url: "",
+      makerworld_model_id: ""
     }]);
   };
 
@@ -886,7 +902,9 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
           drive_url: p.drive_url,
           material: p.material,
           print_notes: p.print_notes,
-          print_time_estimated: p.print_time_estimated
+          print_time_estimated: p.print_time_estimated,
+          makerworld_url: p.makerworld_url,
+          makerworld_model_id: p.makerworld_model_id
         }));
 
         if (validPieces.length > 0) {
@@ -918,7 +936,9 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
         drive_url: "",
         material: "",
         print_notes: "",
-        print_time_estimated: ""
+        print_time_estimated: "",
+        makerworld_url: "",
+        makerworld_model_id: ""
       }]);
       setStlflixUrl("");
     } catch (error: any) {
@@ -943,18 +963,22 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
         </DialogHeader>
         
         <Tabs defaultValue="manual" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="manual" className="gap-2">
               <FileText className="h-4 w-4" />
               Manual
             </TabsTrigger>
             <TabsTrigger value="import" className="gap-2">
               <History className="h-4 w-4" />
-              Importar por link
+              STLFLIX
             </TabsTrigger>
             <TabsTrigger value="drive" className="gap-2">
               <HardDrive className="h-4 w-4" />
               Arquivo próprio
+            </TabsTrigger>
+            <TabsTrigger value="makerworld" className="gap-2">
+              <Globe className="h-4 w-4" />
+              MakerWorld
             </TabsTrigger>
           </TabsList>
 
@@ -1214,6 +1238,173 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
               </Button>
             </div>
+          </TabsContent>
+
+          <TabsContent value="makerworld" className="space-y-6">
+            <div className="space-y-4 bg-muted/30 p-4 rounded-xl border border-dashed">
+              <div className="space-y-2">
+                <Label>Link do modelo no MakerWorld</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Cole o link do modelo no MakerWorld (ex: makerworld.com/pt/models/123456)" 
+                    value={stlflixUrl}
+                    onChange={e => setStlflixUrl(e.target.value)}
+                  />
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 shrink-0" 
+                    onClick={async () => {
+                      if (!stlflixUrl) {
+                        toast.error("Cole o link do modelo no MakerWorld");
+                        return;
+                      }
+                      setIsScraping(true);
+                      try {
+                        const { data, error } = await supabase.functions.invoke('scrape-makerworld', {
+                          body: { url: stlflixUrl }
+                        });
+                        if (error) throw error;
+                        if (data.success) {
+                          setDropData(prev => ({
+                            ...prev,
+                            name: data.title,
+                            image_url: data.image_url,
+                            link: data.makerworld_url,
+                            source: 'makerworld'
+                          }));
+                          setPieces([{
+                            ...pieces[0],
+                            name: data.title,
+                            image_url: data.image_url,
+                            piece_url: data.makerworld_url,
+                            full_description: data.description,
+                            makerworld_url: data.makerworld_url,
+                            makerworld_model_id: data.model_id,
+                            source: 'makerworld'
+                          }]);
+                          toast.success("✓ Dados importados");
+                        } else {
+                          toast.error(data.error || "Erro ao importar");
+                        }
+                      } catch (err: any) {
+                        toast.error(`Erro: ${err.message}`);
+                      } finally {
+                        setIsScraping(false);
+                      }
+                    }}
+                    disabled={isScraping}
+                  >
+                    {isScraping ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Download className="h-4 w-4 mr-2" />}
+                    Importar
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {pieces[0]?.source === 'makerworld' && (
+              <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+                <div className="grid gap-4">
+                  <div className="space-y-2">
+                    <Label>Nome da peça *</Label>
+                    <Input 
+                      value={dropData.name}
+                      onChange={e => {
+                        setDropData({...dropData, name: e.target.value});
+                        updatePiece(0, 'name', e.target.value);
+                      }}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Link MakerWorld</Label>
+                      <Input value={pieces[0].makerworld_url} readOnly className="bg-muted/50" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>URL da imagem</Label>
+                      <Input 
+                        value={dropData.image_url}
+                        onChange={e => {
+                          setDropData({...dropData, image_url: e.target.value});
+                          updatePiece(0, 'image_url', e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Descrição</Label>
+                    <Textarea 
+                      className="min-h-[100px]"
+                      value={pieces[0].full_description}
+                      onChange={e => updatePiece(0, 'full_description', e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Disponível como</Label>
+                      <Select 
+                        value={pieces[0].available_as} 
+                        onValueChange={val => updatePiece(0, 'available_as', val)}
+                      >
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="figura">Figura</SelectItem>
+                          <SelectItem value="chaveiro">Chaveiro</SelectItem>
+                          <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Material</Label>
+                      <Input 
+                        placeholder="Ex: PLA" 
+                        value={pieces[0].material}
+                        onChange={e => updatePiece(0, 'material', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Tempo estimado</Label>
+                      <Input 
+                        placeholder="Ex: 2h30min" 
+                        value={pieces[0].print_time_estimated}
+                        onChange={e => updatePiece(0, 'print_time_estimated', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Link do arquivo no Google Drive (opcional)</Label>
+                      <Input 
+                        placeholder="Link GDrive" 
+                        value={pieces[0].drive_url}
+                        onChange={e => updatePiece(0, 'drive_url', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Observações de impressão</Label>
+                    <Textarea 
+                      placeholder="Configurações, temperatura, suportes, etc." 
+                      value={pieces[0].print_notes}
+                      onChange={e => updatePiece(0, 'print_notes', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t">
+                  <Button 
+                    onClick={handleSave} 
+                    disabled={isLoading} 
+                    className="w-full bg-primary hover:bg-primary/90 h-12 text-lg font-bold"
+                  >
+                    {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Criar Drop com esta peça"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="manual" className="space-y-6">
