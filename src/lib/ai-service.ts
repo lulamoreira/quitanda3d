@@ -10,7 +10,7 @@ const generateCopySchema = z.object({
 });
 
 export const generateCopyFn = createServerFn({ method: "POST" })
-  .validator((data: unknown) => generateCopySchema.parse(data))
+  .inputValidator(generateCopySchema)
   .handler(async ({ data }) => {
     const prompt = `Gere copy de vendas em português brasileiro para esta peça de impressão 3D:
 Peça: ${data.piece_name}
