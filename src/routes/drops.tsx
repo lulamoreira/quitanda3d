@@ -542,9 +542,20 @@ function PieceCard({ piece, index }: any) {
                     </Badge>
                   )}
                   {piece.stlflix_url && (
-                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors">
+                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors" title="Abrir na STLFLIX">
                       <ExternalLink className="h-3 w-3" />
                     </a>
+                  )}
+                  {piece.drive_url && (
+                    <a href={piece.drive_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 flex items-center gap-1 transition-colors" title="Abrir no Google Drive">
+                      <HardDrive className="h-3 w-3" />
+                      <span className="text-[10px]">Abrir arquivo</span>
+                    </a>
+                  )}
+                  {piece.material && (
+                    <Badge variant="secondary" className="bg-muted text-muted-foreground h-5 px-1.5 text-[10px]">
+                      {piece.material}
+                    </Badge>
                   )}
                   {piece.print_time_mono && (
                     <span className="text-[10px] text-muted-foreground flex items-center gap-1">
@@ -552,7 +563,29 @@ function PieceCard({ piece, index }: any) {
                       Mono: {piece.print_time_mono}
                     </span>
                   )}
+                  {piece.print_time_estimated && (
+                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                      <Clock className="h-2.5 w-2.5" />
+                      ~{piece.print_time_estimated}
+                    </span>
+                  )}
                 </div>
+                {piece.print_notes && (
+                  <div className="mt-1">
+                    <button 
+                      onClick={() => setIsNotesExpanded(!isNotesExpanded)}
+                      className="text-[10px] text-primary flex items-center gap-1 hover:underline"
+                    >
+                      <ChevronDown className={cn("h-2.5 w-2.5 transition-transform", isNotesExpanded && "rotate-180")} />
+                      {isNotesExpanded ? "Ocultar obs." : "Ver obs."}
+                    </button>
+                    {isNotesExpanded && (
+                      <p className="text-[10px] text-muted-foreground mt-1 bg-muted/30 p-1.5 rounded border border-dashed">
+                        {piece.print_notes}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
               <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold shrink-0", statusColors[piece.status] || 'bg-muted')}>
                 {piece.status}
