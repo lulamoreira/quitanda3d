@@ -365,18 +365,6 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 truncate">
                       <h3 className="font-display font-semibold text-lg truncate">{drop.drop_name}</h3>
-                      {drop.source === 'discord' && (
-                        <Badge className="bg-purple-500/10 text-purple-600 border-purple-200 gap-1 px-1.5 h-5 text-[10px]">
-                          <Zap className="h-3 w-3 fill-current" />
-                          Discord
-                        </Badge>
-                      )}
-                      {drop.source === 'makerworld' && (
-                        <Badge className="bg-green-500/10 text-green-600 border-green-200 gap-1 px-1.5 h-5 text-[10px]">
-                          <Globe className="h-3 w-3 fill-current" />
-                          MakerWorld
-                        </Badge>
-                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn("shrink-0", statusColor)}>
@@ -404,9 +392,37 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
                       </DropdownMenu>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    {formatDate(drop.created_at)}
-                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    <p className="text-xs text-muted-foreground">
+                      {formatDate(drop.created_at, "dd 'de' MMM 'de' yyyy 'às' HH:mm")}
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {drop.source === 'discord' && (
+                        <Badge className="bg-purple-500/10 text-purple-600 border-purple-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <Zap className="h-3 w-3 fill-current" />
+                          STLFLIX via Discord
+                        </Badge>
+                      )}
+                      {drop.source === 'stlflix_import' && (
+                        <Badge className="bg-orange-500/10 text-orange-600 border-orange-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <Zap className="h-3 w-3 fill-current" />
+                          STLFLIX
+                        </Badge>
+                      )}
+                      {drop.source === 'makerworld' && (
+                        <Badge className="bg-green-500/10 text-green-600 border-green-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <Globe className="h-3 w-3 fill-current" />
+                          MakerWorld
+                        </Badge>
+                      )}
+                      {drop.source === 'manual' && (
+                        <Badge className="bg-gray-500/10 text-gray-600 border-gray-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <FileText className="h-3 w-3 fill-current" />
+                          Arquivo próprio
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex items-center justify-between mt-4">
                   <span className="text-sm font-medium">{totalPieces} {totalPieces === 1 ? 'peça' : 'peças'}</span>
