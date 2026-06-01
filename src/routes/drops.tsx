@@ -715,48 +715,66 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
     setIsLoading(true);
     try {
-      // 1. Inserir Drop
-      const { data: drop, error: dropError } = await supabase
-        .from('drops')
-        .insert({
-          drop_name: dropData.name,
-          description: dropData.description,
-          drop_image_url: dropData.image_url,
-          drop_link: dropData.link,
-          source: pieces[0]?.source || 'manual'
-        })
-        .select()
-        .single();
+      if (editingDrop) {
+        // UPDATE
+        const { error } = await supabase
+          .from('drops')
+          .update({
+            drop_name: dropData.name,
+            description: dropData.description,
+            drop_image_url: dropData.image_url,
+            drop_link: dropData.link
+          })
+          .eq('id', editingDrop.id);
 
-      if (dropError) throw dropError;
+        if (error) throw error;
+        toast.success("✓ Drop atualizado com sucesso");
+      } else {
+        // INSERT
+        // 1. Inserir Drop
+        const { data: drop, error: dropError } = await supabase
+          .from('drops')
+          .insert({
+            drop_name: dropData.name,
+            description: dropData.description,
+            drop_image_url: dropData.image_url,
+            drop_link: dropData.link,
+            source: pieces[0]?.source || 'manual'
+          })
+          .select()
+          .single();
 
-      // 2. Inserir Peças
-      const validPieces = pieces
-        .filter(p => p.name.trim() !== "")
-        .map(p => ({
-          name: p.name,
-          image_url: p.image_url,
-          piece_url: p.piece_url,
-          available_as: p.available_as,
-          drop_id: drop.id,
-          full_description: p.full_description,
-          stlflix_code: p.stlflix_code,
-          stlflix_slug: p.stlflix_slug,
-          stlflix_url: p.piece_url,
-          print_time_mono: p.print_time_mono,
-          print_time_multi: p.print_time_multi,
-          height_cm: p.height_cm,
-          source: p.source || 'manual'
-        }));
+        if (dropError) throw dropError;
 
-      if (validPieces.length > 0) {
-        const { error: piecesError } = await supabase
-          .from('pieces')
-          .insert(validPieces);
-        if (piecesError) throw piecesError;
+        // 2. Inserir Peças
+        const validPieces = pieces
+          .filter(p => p.name.trim() !== "")
+          .map(p => ({
+            name: p.name,
+            image_url: p.image_url,
+            piece_url: p.piece_url,
+            available_as: p.available_as,
+            drop_id: drop.id,
+            full_description: p.full_description,
+            stlflix_code: p.stlflix_code,
+            stlflix_slug: p.stlflix_slug,
+            stlflix_url: p.piece_url,
+            print_time_mono: p.print_time_mono,
+            print_time_multi: p.print_time_multi,
+            height_cm: p.height_cm,
+            source: p.source || 'manual'
+          }));
+
+        if (validPieces.length > 0) {
+          const { error: piecesError } = await supabase
+            .from('pieces')
+            .insert(validPieces);
+          if (piecesError) throw piecesError;
+        }
+
+        toast.success("Drop criado com sucesso!");
       }
 
-      toast.success("Drop criado com sucesso!");
       queryClient.invalidateQueries({ queryKey: ["drops"] });
       onOpenChange(false);
       // Reset form
