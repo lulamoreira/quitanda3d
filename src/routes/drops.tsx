@@ -876,12 +876,16 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             full_description: p.full_description,
             stlflix_code: p.stlflix_code,
             stlflix_slug: p.stlflix_slug,
-            stlflix_url: p.piece_url,
-            print_time_mono: p.print_time_mono,
-            print_time_multi: p.print_time_multi,
-            height_cm: p.height_cm,
-            source: p.source || 'manual'
-          }));
+          stlflix_url: p.piece_url,
+          print_time_mono: p.print_time_mono,
+          print_time_multi: p.print_time_multi,
+          height_cm: p.height_cm,
+          source: p.source || 'manual',
+          drive_url: p.drive_url,
+          material: p.material,
+          print_notes: p.print_notes,
+          print_time_estimated: p.print_time_estimated
+        }));
 
         if (validPieces.length > 0) {
           const { error: piecesError } = await supabase
