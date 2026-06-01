@@ -13,6 +13,11 @@ import {
   Check,
   AlertCircle,
   Zap,
+  Download,
+  Copy,
+  Clock,
+  History,
+  FileText,
 } from "lucide-react";
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
 
