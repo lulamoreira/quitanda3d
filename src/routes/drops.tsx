@@ -760,6 +760,10 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
   const [isLoading, setIsLoading] = useState(false);
   const [isScraping, setIsScraping] = useState(false);
   const [stlflixUrl, setStlflixUrl] = useState("");
+  const [pastedHtml, setPastedHtml] = useState("");
+  const [stlflixGallery, setStlflixGallery] = useState<string[]>([]);
+  const [stlflixDropTitle, setStlflixDropTitle] = useState("");
+
   
   const [dropData, setDropData] = useState({
     name: "",
