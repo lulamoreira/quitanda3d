@@ -285,7 +285,15 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect }: a
               <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-display font-semibold text-lg truncate">{drop.drop_name}</h3>
+                    <div className="flex items-center gap-2 truncate">
+                      <h3 className="font-display font-semibold text-lg truncate">{drop.drop_name}</h3>
+                      {drop.source === 'discord' && (
+                        <Badge className="bg-purple-500/10 text-purple-600 border-purple-200 gap-1 px-1.5 h-5 text-[10px]">
+                          <Zap className="h-3 w-3 fill-current" />
+                          Discord
+                        </Badge>
+                      )}
+                    </div>
                     <Badge variant="outline" className={cn("shrink-0", statusColor)}>
                       {statusLabel}
                     </Badge>
