@@ -77,6 +77,7 @@ function DropsPage() {
     queryKey: ["pieces", selectedDropId],
     enabled: !!selectedDropId,
     queryFn: async () => {
+      if (!selectedDropId) return [];
       const { data, error } = await supabase
         .from("pieces")
         .select("*")
@@ -87,6 +88,7 @@ function DropsPage() {
       return data;
     },
   });
+
 
   return (
     <AppShell>
