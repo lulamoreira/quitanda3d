@@ -51,6 +51,7 @@ export type Database = {
         Row: {
           created_at: string | null
           description: string | null
+          discord_message_id: string | null
           drop_image_url: string | null
           drop_link: string | null
           drop_name: string
@@ -60,6 +61,7 @@ export type Database = {
         Insert: {
           created_at?: string | null
           description?: string | null
+          discord_message_id?: string | null
           drop_image_url?: string | null
           drop_link?: string | null
           drop_name: string
@@ -69,6 +71,7 @@ export type Database = {
         Update: {
           created_at?: string | null
           description?: string | null
+          discord_message_id?: string | null
           drop_image_url?: string | null
           drop_link?: string | null
           drop_name?: string
