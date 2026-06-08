@@ -734,9 +734,25 @@ function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
                 .from('pieces')
                 .update({ image_url: url, image_valid: isImageValid })
                 .eq('id', piece.id);
+
               if (error) {
                 toast.error("Erro ao atualizar imagem da peça");
               } else {
+                // Also update the drop image if it doesn't have one or if this is the only/main piece
+                const { data: currentDrop } = await supabase
+                  .from('drops')
+                  .select('drop_image_url')
+                  .eq('id', piece.drop_id)
+                  .single();
+
+                if (!currentDrop?.drop_image_url || currentDrop.drop_image_url === "") {
+                  await supabase
+                    .from('drops')
+                    .update({ drop_image_url: url, image_valid: isImageValid })
+                    .eq('id', piece.drop_id);
+                  queryClient.invalidateQueries({ queryKey: ["drops"] });
+                }
+
                 toast.success("✓ Imagem da peça atualizada");
                 queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
               }
