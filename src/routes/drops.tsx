@@ -729,16 +729,6 @@ function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
               if (error) {
                 toast.error("Erro ao atualizar imagem da peça");
               } else {
-                // Also update the drop image if it doesn't have one or if this is the only/main piece
-                const { data: currentDrop } = await supabase
-                  .from('drops')
-                  .select('drop_image_url')
-                  .eq('id', piece.drop_id)
-                  .single();
-
-              if (error) {
-                toast.error("Erro ao atualizar imagem da peça");
-              } else {
                 toast.success("✓ Imagem da peça atualizada");
                 queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
               }
