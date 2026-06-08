@@ -421,21 +421,8 @@ function DropsList({
                     if (error) {
                       toast.error("Erro ao atualizar imagem do drop");
                     } else {
-                      // Check if there are pieces and update the first one's image if it doesn't have one
-                      // or if it was imported as a single piece
-                      if (drop.pieces && drop.pieces.length > 0) {
-                        // Update all pieces if it's a drag-and-drop on the drop card
-                        // to ensure the image is updated everywhere
-                        const pieceIds = drop.pieces.map((p: any) => p.id);
-                        await supabase
-                          .from('pieces')
-                          .update({ image_url: url, image_valid: true })
-                          .in('id', pieceIds);
-                      }
-
                       toast.success("✓ Imagem do drop atualizada");
                       queryClient.invalidateQueries({ queryKey: ["drops"] });
-                      queryClient.invalidateQueries({ queryKey: ["pieces", drop.id] });
                     }
                   }
                 }
@@ -742,22 +729,6 @@ function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
               if (error) {
                 toast.error("Erro ao atualizar imagem da peça");
               } else {
-                // Also update the drop image if it doesn't have one or if this is the only/main piece
-                const { data: currentDrop } = await supabase
-                  .from('drops')
-                  .select('drop_image_url')
-                  .eq('id', piece.drop_id)
-                  .single();
-
-                // ALWAYS update the drop image when a piece image is updated via drag-and-drop
-                // The uploaded image takes priority over any previous link
-                await supabase
-                  .from('drops')
-                  .update({ drop_image_url: url, image_valid: true })
-                  .eq('id', piece.drop_id);
-                
-                queryClient.invalidateQueries({ queryKey: ["drops"] });
-
                 toast.success("✓ Imagem da peça atualizada");
                 queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
               }
