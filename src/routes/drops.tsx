@@ -224,9 +224,9 @@ export default function DropsPage() {
           </Tabs>
         </div>
 
-        {/* Desktop 2-column layout */}
-        <div className="hidden lg:grid grid-cols-2 gap-8 items-start">
-          <section className="space-y-4">
+        {/* Desktop Layout */}
+        <div className="hidden lg:flex flex-col gap-8 items-start">
+          <section className="space-y-4 w-full">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-xl font-semibold">Lista de Drops</h2>
             </div>
@@ -245,17 +245,23 @@ export default function DropsPage() {
             />
           </section>
 
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold px-1">Peças do Drop</h2>
-            <PiecesList 
-              pieces={pieces} 
-              isLoading={isLoadingPieces} 
-              isError={isErrorPieces}
-              error={errorPieces}
-              dropId={selectedDropId} 
-            />
-
-          </section>
+          {selectedDropId && (
+            <section className="space-y-4 w-full animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center justify-between px-1 border-t pt-8">
+                <h2 className="text-2xl font-bold px-1">Peças do Lançamento</h2>
+                <Button variant="ghost" size="sm" onClick={() => setSelectedDropId(null)}>
+                  Fechar peças
+                </Button>
+              </div>
+              <PiecesList 
+                pieces={pieces} 
+                isLoading={isLoadingPieces} 
+                isError={isErrorPieces}
+                error={errorPieces}
+                dropId={selectedDropId} 
+              />
+            </section>
+          )}
         </div>
       </div>
 
