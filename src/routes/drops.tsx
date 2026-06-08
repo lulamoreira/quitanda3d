@@ -698,7 +698,35 @@ function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
 
   return (
     <>
-      <Card className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" style={getStaggerDelay(index)}>
+      <Card 
+        className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" 
+        style={getStaggerDelay(index)}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onDrop={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const file = e.dataTransfer.files[0];
+          if (file && file.type.startsWith('image/')) {
+            const url = await handleImageUpload(file);
+            if (url) {
+              const isImageValid = await validateImageUrl(url);
+              const { error } = await supabase
+                .from('pieces')
+                .update({ image_url: url, image_valid: isImageValid })
+                .eq('id', piece.id);
+              if (error) {
+                toast.error("Erro ao atualizar imagem da peça");
+              } else {
+                toast.success("✓ Imagem da peça atualizada");
+                queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
+              }
+            }
+          }
+        }}
+      >
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
