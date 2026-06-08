@@ -1607,13 +1607,58 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="drop-img">URL da imagem</Label>
-                  <Input 
-                    id="drop-img" 
-                    placeholder="https://..." 
-                    value={dropData.image_url}
-                    onChange={e => setDropData({...dropData, image_url: e.target.value})}
-                  />
+                  <Label htmlFor="drop-img">Imagem de capa do drop</Label>
+                  <div 
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-4 transition-colors text-center cursor-pointer flex flex-col items-center justify-center gap-2",
+                      "hover:bg-accent/50 hover:border-primary",
+                      dropData.image_url ? "border-primary/50" : "border-muted-foreground/30"
+                    )}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('image/')) {
+                        setIsLoading(true);
+                        const url = await handleImageUpload(file);
+                        if (url) setDropData({...dropData, image_url: url});
+                        setIsLoading(false);
+                      }
+                    }}
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = async (e: any) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setIsLoading(true);
+                          const url = await handleImageUpload(file);
+                          if (url) setDropData({...dropData, image_url: url});
+                          setIsLoading(false);
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    {dropData.image_url ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <img src={dropData.image_url} alt="Preview" className="max-h-32 rounded shadow-sm" />
+                        <span className="text-xs text-muted-foreground truncate max-w-[200px]">{dropData.image_url}</span>
+                        <Button variant="outline" size="sm" className="h-7 text-[10px]">Alterar imagem</Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 py-4">
+                        <div className="p-3 rounded-full bg-primary/10">
+                          <ImageIcon className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Arraste a imagem de capa aqui</p>
+                          <p className="text-xs text-muted-foreground">ou clique para selecionar do computador</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="drop-link">Link STLFLIX</Label>
