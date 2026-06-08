@@ -338,11 +338,12 @@ function DropsList({
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('drop-assets')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 315360000); // 10 anos
 
-      return publicUrl;
+      if (signedError) throw signedError;
+      return signedData.signedUrl;
     } catch (error: any) {
       console.error('Error uploading image:', error);
       toast.error(`Erro ao fazer upload: ${error.message}`);
@@ -578,11 +579,12 @@ function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('drop-assets')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 315360000); // 10 anos
 
-      return publicUrl;
+      if (signedError) throw signedError;
+      return signedData.signedUrl;
     } catch (error: any) {
       console.error('Error uploading image:', error);
       toast.error(`Erro ao fazer upload: ${error.message}`);
@@ -1174,11 +1176,12 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
       if (error) throw error;
 
-      const { data: { publicUrl } } = supabase.storage
+      const { data: signedData, error: signedError } = await supabase.storage
         .from('drop-assets')
-        .getPublicUrl(filePath);
+        .createSignedUrl(filePath, 315360000); // 10 anos
 
-      return publicUrl;
+      if (signedError) throw signedError;
+      return signedData.signedUrl;
     } catch (error: any) {
       console.error('Error uploading image:', error);
       toast.error(`Erro ao fazer upload: ${error.message}`);
