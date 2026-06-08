@@ -345,7 +345,7 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
           >
             <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
               <div className="w-full sm:w-48 h-32 relative overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none">
-                {drop.drop_image_url ? (
+                {drop.drop_image_url && drop.image_valid !== false ? (
                   <img 
                     src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
                     alt={drop.drop_name} 
@@ -355,12 +355,13 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = "";
                       (e.target as HTMLImageElement).onerror = null;
-                      (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-8 w-8 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg></div>';
+                      (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-8 w-8 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[10px] text-destructive font-medium\">Link quebrado</span></div>';
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full bg-muted flex items-center justify-center">
+                  <div className="w-full h-full bg-muted flex flex-col items-center justify-center gap-2">
                     <Package className="h-8 w-8 text-muted-foreground opacity-20" />
+                    {drop.image_valid === false && <span className="text-[10px] text-destructive font-medium">Link inválido</span>}
                   </div>
                 )}
               </div>
@@ -549,17 +550,23 @@ function PieceCard({ piece, index }: any) {
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
-            {piece.image_url ? (
+            {piece.image_url && piece.image_valid !== false ? (
               <img 
                 src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
                 alt={piece.name} 
                 className="object-cover w-full h-full" 
                 crossOrigin="anonymous" 
                 referrerPolicy="no-referrer" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "";
+                  (e.target as HTMLImageElement).onerror = null;
+                  (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-4 w-4 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[8px] text-destructive\">OFF</span></div>';
+                }}
               />
             ) : (
-              <div className="w-full h-full bg-muted flex items-center justify-center">
+              <div className="w-full h-full bg-muted flex flex-col items-center justify-center">
                 <Package className="h-6 w-6 text-muted-foreground opacity-20" />
+                {piece.image_valid === false && <span className="text-[8px] text-destructive font-bold uppercase">Erro</span>}
               </div>
             )}
           </div>
@@ -836,6 +843,25 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
 
 
+  const validateImageUrl = async (url: string): Promise<boolean> => {
+    if (!url) return false;
+    try {
+      // Usar proxy ou apenas tentar HEAD se CORS permitir
+      // Como estamos no navegador, HEAD pode falhar por CORS
+      // Uma alternativa é apenas tentar carregar como imagem
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        // Timeout de 5s
+        setTimeout(() => resolve(false), 5000);
+      });
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleSave = async () => {
     if (!dropData.name) {
       toast.error("O nome do drop é obrigatório");
@@ -844,6 +870,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
     setIsLoading(true);
     try {
+      const isDropImageValid = dropData.image_url ? await validateImageUrl(dropData.image_url) : true;
+
       if (editingDrop) {
         // UPDATE
         const { error } = await supabase
@@ -852,7 +880,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             drop_name: dropData.name,
             description: dropData.description,
             drop_image_url: dropData.image_url,
-            drop_link: dropData.link
+            drop_link: dropData.link,
+            image_valid: isDropImageValid
           })
           .eq('id', editingDrop.id);
 
@@ -868,42 +897,47 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             description: dropData.description,
             drop_image_url: dropData.image_url,
             drop_link: dropData.link,
-            source: dropData.source || pieces[0]?.source || 'manual'
+            source: dropData.source || pieces[0]?.source || 'manual',
+            image_valid: isDropImageValid
           })
           .select()
           .single();
 
         if (dropError) throw dropError;
 
-        // 2. Inserir Peças
-        const validPieces = pieces
+        // 2. Inserir Peças com validação de imagem
+        const processedPieces = await Promise.all(pieces
           .filter(p => p.name.trim() !== "")
-          .map(p => ({
-            name: p.name,
-            image_url: p.image_url,
-            piece_url: p.piece_url,
-            available_as: p.available_as,
-            drop_id: drop.id,
-            full_description: p.full_description,
-            stlflix_code: p.stlflix_code,
-            stlflix_slug: p.stlflix_slug,
-          stlflix_url: p.piece_url,
-          print_time_mono: p.print_time_mono,
-          print_time_multi: p.print_time_multi,
-          height_cm: p.height_cm,
-          source: p.source || 'manual',
-          drive_url: p.drive_url,
-          material: p.material,
-          print_notes: p.print_notes,
-          print_time_estimated: p.print_time_estimated,
-          makerworld_url: p.makerworld_url,
-          makerworld_model_id: p.makerworld_model_id
-        }));
+          .map(async p => {
+            const isPieceImageValid = p.image_url ? await validateImageUrl(p.image_url) : true;
+            return {
+              name: p.name,
+              image_url: p.image_url,
+              piece_url: p.piece_url,
+              available_as: p.available_as,
+              drop_id: drop.id,
+              full_description: p.full_description,
+              stlflix_code: p.stlflix_code,
+              stlflix_slug: p.stlflix_slug,
+              stlflix_url: p.piece_url,
+              print_time_mono: p.print_time_mono,
+              print_time_multi: p.print_time_multi,
+              height_cm: p.height_cm,
+              source: p.source || 'manual',
+              drive_url: p.drive_url,
+              material: p.material,
+              print_notes: p.print_notes,
+              print_time_estimated: p.print_time_estimated,
+              makerworld_url: p.makerworld_url,
+              makerworld_model_id: p.makerworld_model_id,
+              image_valid: isPieceImageValid
+            };
+          }));
 
-        if (validPieces.length > 0) {
+        if (processedPieces.length > 0) {
           const { error: piecesError } = await supabase
             .from('pieces')
-            .insert(validPieces);
+            .insert(processedPieces);
           if (piecesError) throw piecesError;
         }
 
