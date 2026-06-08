@@ -544,6 +544,50 @@ function DropsList({
 }
 
 function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
+  const queryClient = useQueryClient();
+
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('drop-assets')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('drop-assets')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(`Erro ao fazer upload: ${error.message}`);
+      return null;
+    }
+  };
+
+  const validateImageUrl = async (url: string): Promise<boolean> => {
+    if (!url) return false;
+    if (url.includes('supabase.co')) return true;
+    try {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        setTimeout(() => resolve(false), 5000);
+      });
+    } catch (error) {
+      return false;
+    }
+  };
   if (!dropId) {
     return (
       <Card className="border-dashed py-24 flex flex-col items-center justify-center text-center space-y-4">
