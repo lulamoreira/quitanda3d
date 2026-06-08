@@ -1,13 +1,32 @@
 import { AppShell } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { 
   Package, 
   Plus, 
   ExternalLink, 
   ChevronRight, 
   Loader2,
+  Trash2,
+  Calculator,
+  Check,
+  AlertCircle,
+  Zap,
+  Download,
+  Copy,
+  Clock,
+  History,
+  FileText,
+  MoreVertical,
+  Pencil,
+  HardDrive,
+  ChevronDown,
+  Globe,
+  CheckCircle2,
+  Upload,
+  Image as ImageIcon,
+} from "lucide-react";
   Trash2,
   Calculator,
   Check,
