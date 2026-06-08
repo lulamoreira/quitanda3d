@@ -351,31 +351,6 @@ function DropsList({
               )}
               style={getStaggerDelay(index)}
               onClick={() => onSelect(isSelected ? null : drop.id)}
-              onDragOver={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-              }}
-              onDrop={async (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                const file = e.dataTransfer.files[0];
-                if (file && file.type.startsWith('image/')) {
-                  const url = await handleImageUpload(file);
-                  if (url) {
-                    const isImageValid = await validateImageUrl(url);
-                    const { error } = await supabase
-                      .from('drops')
-                      .update({ drop_image_url: url, image_valid: isImageValid })
-                      .eq('id', drop.id);
-                    if (error) {
-                      toast.error("Erro ao atualizar imagem do drop");
-                    } else {
-                      toast.success("✓ Imagem do drop atualizada");
-                      queryClient.invalidateQueries({ queryKey: ["drops"] });
-                    }
-                  }
-                }
-              }}
             >
             <CardContent className="p-0 flex flex-col gap-0">
               <div className="w-full h-48 relative overflow-hidden rounded-t-xl">
