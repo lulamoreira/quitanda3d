@@ -770,6 +770,103 @@ function PieceCard({ piece, index }: any) {
         </div>
       </CardContent>
     </Card>
+
+    <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+      <SheetContent className="sm:max-w-xl overflow-y-auto">
+        <SheetHeader className="mb-6">
+          <SheetTitle className="text-2xl font-bold leading-tight">{piece.name}</SheetTitle>
+        </SheetHeader>
+        
+        <div className="space-y-8">
+          <div className="aspect-square w-full bg-black rounded-xl overflow-hidden border shadow-inner">
+            <img 
+              src={piece.image_url} 
+              alt={piece.name} 
+              className="w-full h-full object-contain"
+              crossOrigin="anonymous"
+              referrerPolicy="no-referrer"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 rounded-xl bg-accent/30 space-y-1">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground">Status</span>
+              <div className="flex items-center gap-2">
+                <div className={cn("h-2 w-2 rounded-full", piece.status === 'publicado' ? "bg-green-500" : "bg-gray-400")} />
+                <span className="font-semibold capitalize">{piece.status}</span>
+              </div>
+            </div>
+            <div className="p-4 rounded-xl bg-accent/30 space-y-1">
+              <span className="text-[10px] uppercase font-bold text-muted-foreground">Código STL</span>
+              <div className="font-mono font-bold">{piece.stlflix_code || "---"}</div>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Descrição Detalhada</h5>
+            <div className="p-5 rounded-xl bg-muted/50 border text-sm leading-relaxed whitespace-pre-wrap">
+              {piece.full_description || "Nenhuma descrição detalhada disponível para esta peça."}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-3">
+              <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Especificações</h5>
+              <div className="space-y-2">
+                {piece.material && (
+                  <div className="flex justify-between text-sm border-b pb-2">
+                    <span className="text-muted-foreground">Material</span>
+                    <span className="font-medium">{piece.material}</span>
+                  </div>
+                )}
+                {piece.height_cm && (
+                  <div className="flex justify-between text-sm border-b pb-2">
+                    <span className="text-muted-foreground">Altura</span>
+                    <span className="font-medium">{piece.height_cm}</span>
+                  </div>
+                )}
+                {piece.print_time_mono && (
+                  <div className="flex justify-between text-sm border-b pb-2">
+                    <span className="text-muted-foreground">Tempo Mono</span>
+                    <span className="font-medium">{piece.print_time_mono}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="space-y-3">
+              <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Links Úteis</h5>
+              <div className="flex flex-col gap-2">
+                {piece.stlflix_url && (
+                  <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
+                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer">
+                      <ExternalLink className="h-4 w-4 text-orange-500" />
+                      STLFLIX
+                    </a>
+                  </Button>
+                )}
+                {piece.makerworld_url && (
+                  <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
+                    <a href={piece.makerworld_url} target="_blank" rel="noreferrer">
+                      <Globe className="h-4 w-4 text-green-500" />
+                      MakerWorld
+                    </a>
+                  </Button>
+                )}
+                {piece.drive_url && (
+                  <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
+                    <a href={piece.drive_url} target="_blank" rel="noreferrer">
+                      <HardDrive className="h-4 w-4 text-blue-500" />
+                      Arquivo Drive
+                    </a>
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }
 
