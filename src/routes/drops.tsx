@@ -549,7 +549,7 @@ function PieceCard({ piece, index }: any) {
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
             {piece.image_url ? (
-              <img src={piece.image_url} alt={piece.name} className="object-cover w-full h-full" />
+              <img src={piece.image_url} alt={piece.name} className="object-cover w-full h-full" referrerPolicy="no-referrer" />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
                 <Package className="h-6 w-6 text-muted-foreground opacity-20" />
