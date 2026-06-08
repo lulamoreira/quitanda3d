@@ -523,6 +523,7 @@ function PieceCard({ piece, index }: any) {
   const [isCalcOpen, setIsCalcOpen] = useState(false);
   const [isPubOpen, setIsPubOpen] = useState(false);
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const queryClient = useQueryClient();
 
