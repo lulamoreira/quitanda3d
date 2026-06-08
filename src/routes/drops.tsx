@@ -655,7 +655,7 @@ function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
   );
 }
 
-function PieceCard({ piece, index }: any) {
+function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
   const [isSelling, setIsSelling] = useState(piece.active || false);
   const [availableAs, setAvailableAs] = useState(piece.available_as || 'ambos');
   const [priceFigura, setPriceFigura] = useState(piece.price_figura || "");
