@@ -843,20 +843,43 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
     setPieces(newPieces);
   };
 
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
 
+      const { data, error } = await supabase.storage
+        .from('drop-assets')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('drop-assets')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(`Erro ao fazer upload: ${error.message}`);
+      return null;
+    }
+  };
 
   const validateImageUrl = async (url: string): Promise<boolean> => {
     if (!url) return false;
+    // Se for URL interna do Supabase, já consideramos válida
+    if (url.includes('supabase.co')) return true;
     try {
-      // Usar proxy ou apenas tentar HEAD se CORS permitir
-      // Como estamos no navegador, HEAD pode falhar por CORS
-      // Uma alternativa é apenas tentar carregar como imagem
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => resolve(true);
         img.onerror = () => resolve(false);
         img.src = url;
-        // Timeout de 5s
         setTimeout(() => resolve(false), 5000);
       });
     } catch (error) {
