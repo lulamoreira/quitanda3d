@@ -78,7 +78,6 @@ import { generateCopyFn } from "@/lib/ai-service";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 export default function DropsPage() {
-  const queryClient = useQueryClient();
   const [selectedDropId, setSelectedDropId] = useState<string | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [editingDrop, setEditingDrop] = useState<any>(null);
