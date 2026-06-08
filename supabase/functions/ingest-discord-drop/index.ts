@@ -61,44 +61,39 @@ serve(async (req) => {
       );
     }
 
-    // 3. PARSE DO DROP_NAME
-    const nameRegex = /Drop\s*#?\s*\d*\s*[-–]\s*([^!@\n]+?)(?:\s*!|\s*@|\s*\n|$)/i;
+    // 3. LOG CONTENT FOR DEBUGGING
+    console.log("Receiving Discord content:", content);
+
+    // 4. PARSE DO DROP_NAME
+    // Padrões comuns: "Drop #123 - Nome", "Drop: Nome", ou apenas o Nome na primeira linha
+    const nameRegex = /(?:Drop\s*#?\s*\d*\s*[-–]\s*|Drop:\s*)([^!@\n]+?)(?:\s*!|\s*@|\s*\n|$)/i;
     const nameMatch = content.match(nameRegex);
     let dropName = "";
     
     if (nameMatch && nameMatch[1]) {
       dropName = nameMatch[1].trim();
     } else {
-      const lines = content.split('\n');
-      dropName = lines[0].trim().substring(0, 100);
+      // Se não achar o padrão "Drop", pega a primeira linha que não seja vazia e não seja um link
+      const lines = content.split('\n').map(l => l.trim()).filter(l => l !== "");
+      for (const line of lines) {
+        if (!line.includes("http") && line.length > 3) {
+          dropName = line.substring(0, 100);
+          break;
+        }
+      }
     }
     
     if (!dropName) {
-      dropName = "Drop sem nome";
-    }
-
-    // 4. PARSE DA DESCRIPTION
-    let description = null;
-    const firstUrlIndex = content.indexOf("https://platform.stlflix.com");
-    if (firstUrlIndex !== -1) {
-      const textBeforeUrl = content.substring(0, firstUrlIndex);
-      const descriptionLines = textBeforeUrl.split('\n');
-      // Descartar a primeira linha (título)
-      descriptionLines.shift();
-      const cleanLines = descriptionLines
-        .map(line => line.trim())
-        .filter(line => line !== "");
-      
-      if (cleanLines.length > 0) {
-        description = cleanLines.join(' ').trim();
-      }
+      dropName = "Drop Discord " + new Date().toLocaleDateString();
     }
 
     // 5. PARSE DAS PIECES
-    const piecesRegex = /^[\s]*([A-Za-z0-9][A-Za-z0-9\s\-'_]{1,80})\s*\n\s*(https:\/\/platform\.stlflix\.com\/product\/([a-z0-9\-]+))/gm;
     const pieces = [];
+    
+    // Pattern 1: Markdown [Name](URL)
+    const mdRegex = /\[([^\]]+)\]\((https:\/\/platform\.stlflix\.com\/product\/([a-z0-9\-]+))\)/g;
     let match;
-    while ((match = piecesRegex.exec(content)) !== null) {
+    while ((match = mdRegex.exec(content)) !== null) {
       pieces.push({
         name: match[1].trim(),
         piece_url: match[2],
@@ -106,6 +101,38 @@ serve(async (req) => {
         stlflix_slug: match[3]
       });
     }
+
+    // Pattern 2: Name followed by URL (if not already captured by MD)
+    // Captura "Nome da Peça" seguido de newline ou ":" e o link
+    if (pieces.length === 0) {
+      const textUrlRegex = /(?:^|\n)(?:[•\-\*]\s*)?([^\n\r:]{2,80})\s*[\n\r:]\s*(https:\/\/platform\.stlflix\.com\/product\/([a-z0-9\-]+))/g;
+      while ((match = textUrlRegex.exec(content)) !== null) {
+        // Verificar se esse slug já foi capturado (evitar duplicatas se o regex falhar e capturar de novo)
+        if (!pieces.find(p => p.stlflix_slug === match[3])) {
+          pieces.push({
+            name: match[1].trim(),
+            piece_url: match[2],
+            stlflix_url: match[2],
+            stlflix_slug: match[3]
+          });
+        }
+      }
+    }
+
+    // 6. PARSE DA DESCRIPTION
+    let description = null;
+    // Tenta pegar o bloco de texto antes do primeiro link de produto
+    const firstProductUrlIndex = content.indexOf("https://platform.stlflix.com/product/");
+    if (firstProductUrlIndex !== -1) {
+      const textBefore = content.substring(0, firstProductUrlIndex).trim();
+      const lines = textBefore.split('\n');
+      // Remove a primeira linha se for o título
+      if (lines.length > 1 && (lines[0].includes(dropName) || lines[0].toLowerCase().includes("drop"))) {
+        lines.shift();
+      }
+      description = lines.join('\n').trim();
+    }
+
 
     // 6. INSERT DROP
     const { data: newDrop, error: insertDropError } = await supabase
