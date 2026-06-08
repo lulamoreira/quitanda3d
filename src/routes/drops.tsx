@@ -347,9 +347,10 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
               <div className="w-full sm:w-48 h-32 relative overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none">
                 {drop.drop_image_url ? (
                   <img 
-                    src={drop.drop_image_url} 
+                    src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
                     alt={drop.drop_name} 
                     className="object-cover w-full h-full"
+                    crossOrigin="anonymous"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = "";
@@ -549,7 +550,13 @@ function PieceCard({ piece, index }: any) {
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
             {piece.image_url ? (
-              <img src={piece.image_url} alt={piece.name} className="object-cover w-full h-full" referrerPolicy="no-referrer" />
+              <img 
+                src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
+                alt={piece.name} 
+                className="object-cover w-full h-full" 
+                crossOrigin="anonymous" 
+                referrerPolicy="no-referrer" 
+              />
             ) : (
               <div className="w-full h-full bg-muted flex items-center justify-center">
                 <Package className="h-6 w-6 text-muted-foreground opacity-20" />
