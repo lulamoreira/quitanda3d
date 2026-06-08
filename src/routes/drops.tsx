@@ -1254,16 +1254,58 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>URL da imagem/foto</Label>
-                  <Input 
-                    placeholder="https://..." 
-                    value={pieces[0].image_url}
-                    onChange={e => {
-                      updatePiece(0, 'image_url', e.target.value);
-                      setDropData({...dropData, image_url: e.target.value, source: 'manual'});
-                      updatePiece(0, 'source', 'manual');
+                  <Label>Imagem da peça</Label>
+                  <div 
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-3 transition-colors text-center cursor-pointer min-h-[60px] flex items-center justify-center",
+                      "hover:bg-accent/50 hover:border-primary",
+                      pieces[0].image_url ? "border-primary/50" : "border-muted-foreground/30"
+                    )}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('image/')) {
+                        setIsLoading(true);
+                        const url = await handleImageUpload(file);
+                        if (url) {
+                          updatePiece(0, 'image_url', url);
+                          setDropData({...dropData, image_url: url, source: 'manual'});
+                        }
+                        setIsLoading(false);
+                      }
                     }}
-                  />
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = async (e: any) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setIsLoading(true);
+                          const url = await handleImageUpload(file);
+                          if (url) {
+                            updatePiece(0, 'image_url', url);
+                            setDropData({...dropData, image_url: url, source: 'manual'});
+                          }
+                          setIsLoading(false);
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    {pieces[0].image_url ? (
+                      <div className="flex items-center gap-2">
+                        <img src={pieces[0].image_url} alt="Preview" className="h-10 w-10 object-cover rounded" />
+                        <span className="text-xs truncate max-w-[150px]">{pieces[0].image_url}</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Arraste ou clique para enviar imagem</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Disponível como</Label>
