@@ -348,18 +348,20 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
             <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
               <div className="w-full sm:w-48 h-32 relative overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none">
                 {drop.drop_image_url && drop.image_valid !== false ? (
-                  <img 
-                    src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
-                    alt={drop.drop_name} 
-                    className="object-cover w-full h-full"
-                    crossOrigin="anonymous"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "";
-                      (e.target as HTMLImageElement).onerror = null;
-                      (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-8 w-8 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[10px] text-destructive font-medium\">Link quebrado</span></div>';
-                    }}
-                  />
+                  <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
+                    <img 
+                      src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
+                      alt={drop.drop_name} 
+                      className="object-contain w-full h-full transition-transform hover:scale-105"
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "";
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-8 w-8 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[10px] text-destructive font-medium\">Link quebrado</span></div>';
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-full bg-muted flex flex-col items-center justify-center gap-2">
                     <Package className="h-8 w-8 text-muted-foreground opacity-20" />
