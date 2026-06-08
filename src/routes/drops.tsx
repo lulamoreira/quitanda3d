@@ -566,22 +566,6 @@ function PieceCard({ piece, index }: any) {
                       <Copy className="h-2.5 w-2.5" />
                     </Badge>
                   )}
-                  {piece.stlflix_url && (
-                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors" title="Abrir na STLFLIX">
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                  {piece.makerworld_url && (
-                    <a href={piece.makerworld_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 transition-colors" title="Abrir no MakerWorld">
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )}
-                  {piece.drive_url && (
-                    <a href={piece.drive_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary h-5 flex items-center gap-1 transition-colors" title="Abrir no Google Drive">
-                      <HardDrive className="h-3 w-3" />
-                      <span className="text-[10px]">Abrir arquivo</span>
-                    </a>
-                  )}
                   {piece.material && (
                     <Badge variant="secondary" className="bg-muted text-muted-foreground h-5 px-1.5 text-[10px]">
                       {piece.material}
