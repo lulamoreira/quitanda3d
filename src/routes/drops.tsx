@@ -375,11 +375,11 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
                   </div>
                 )}
               </div>
-              <div className="flex-1 p-4 flex flex-col justify-between min-w-0">
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 truncate">
-                      <h3 className="font-display font-semibold text-lg truncate">{drop.drop_name}</h3>
+              <div className="flex-1 p-5 flex flex-col justify-between min-w-0">
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <h3 className="font-display font-bold text-xl leading-tight break-words">{drop.drop_name}</h3>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={cn("shrink-0", statusColor)}>
