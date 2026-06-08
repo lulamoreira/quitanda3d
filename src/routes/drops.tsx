@@ -351,8 +351,8 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
             style={getStaggerDelay(index)}
             onClick={() => onSelect(drop.id)}
           >
-            <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
-              <div className="w-full sm:w-48 h-32 relative overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none">
+            <CardContent className="p-0 flex flex-col gap-0">
+              <div className="w-full h-48 relative overflow-hidden rounded-t-xl">
                 {drop.drop_image_url && drop.image_valid !== false ? (
                   <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
                     <img 
