@@ -1,7 +1,7 @@
 import { AppShell } from "@/components/AppShell";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { 
   Package, 
   Plus, 
@@ -24,6 +24,8 @@ import {
   ChevronDown,
   Globe,
   CheckCircle2,
+  Upload,
+  Image as ImageIcon,
 } from "lucide-react";
 
 import { formatCurrency, formatDate, getStaggerDelay } from "@/lib/formatters";
@@ -346,18 +348,20 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
             <CardContent className="p-0 flex flex-col sm:flex-row gap-4">
               <div className="w-full sm:w-48 h-32 relative overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none">
                 {drop.drop_image_url && drop.image_valid !== false ? (
-                  <img 
-                    src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
-                    alt={drop.drop_name} 
-                    className="object-cover w-full h-full"
-                    crossOrigin="anonymous"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = "";
-                      (e.target as HTMLImageElement).onerror = null;
-                      (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-8 w-8 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[10px] text-destructive font-medium\">Link quebrado</span></div>';
-                    }}
-                  />
+                  <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
+                    <img 
+                      src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
+                      alt={drop.drop_name} 
+                      className="object-contain w-full h-full transition-transform hover:scale-105"
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = "";
+                        (e.target as HTMLImageElement).onerror = null;
+                        (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col gap-2"><svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-8 w-8 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[10px] text-destructive font-medium\">Link quebrado</span></div>';
+                      }}
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-full bg-muted flex flex-col items-center justify-center gap-2">
                     <Package className="h-8 w-8 text-muted-foreground opacity-20" />
@@ -551,18 +555,20 @@ function PieceCard({ piece, index }: any) {
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
             {piece.image_url && piece.image_valid !== false ? (
-              <img 
-                src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
-                alt={piece.name} 
-                className="object-cover w-full h-full" 
-                crossOrigin="anonymous" 
-                referrerPolicy="no-referrer" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "";
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-4 w-4 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[8px] text-destructive\">OFF</span></div>';
-                }}
-              />
+              <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
+                <img 
+                  src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
+                  alt={piece.name} 
+                  className="object-contain w-full h-full transition-transform hover:scale-110" 
+                  crossOrigin="anonymous" 
+                  referrerPolicy="no-referrer" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "";
+                    (e.target as HTMLImageElement).onerror = null;
+                    (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-4 w-4 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[8px] text-destructive\">OFF</span></div>';
+                  }}
+                />
+              </div>
             ) : (
               <div className="w-full h-full bg-muted flex flex-col items-center justify-center">
                 <Package className="h-6 w-6 text-muted-foreground opacity-20" />
@@ -841,20 +847,43 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
     setPieces(newPieces);
   };
 
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
 
+      const { data, error } = await supabase.storage
+        .from('drop-assets')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('drop-assets')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(`Erro ao fazer upload: ${error.message}`);
+      return null;
+    }
+  };
 
   const validateImageUrl = async (url: string): Promise<boolean> => {
     if (!url) return false;
+    // Se for URL interna do Supabase, já consideramos válida
+    if (url.includes('supabase.co')) return true;
     try {
-      // Usar proxy ou apenas tentar HEAD se CORS permitir
-      // Como estamos no navegador, HEAD pode falhar por CORS
-      // Uma alternativa é apenas tentar carregar como imagem
       return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => resolve(true);
         img.onerror = () => resolve(false);
         img.src = url;
-        // Timeout de 5s
         setTimeout(() => resolve(false), 5000);
       });
     } catch (error) {
@@ -1077,15 +1106,58 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <Label>URL da imagem</Label>
-                    <Input 
-                      placeholder="https://..."
-                      value={dropData.image_url}
-                      onChange={e => {
-                        setDropData({...dropData, image_url: e.target.value});
-                        updatePiece(0, 'image_url', e.target.value);
+                    <Label>Imagem do drop</Label>
+                    <div 
+                      className={cn(
+                        "border-2 border-dashed rounded-lg p-3 transition-colors text-center cursor-pointer min-h-[60px] flex items-center justify-center",
+                        "hover:bg-accent/50 hover:border-primary",
+                        dropData.image_url ? "border-primary/50" : "border-muted-foreground/30"
+                      )}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files[0];
+                        if (file && file.type.startsWith('image/')) {
+                          setIsLoading(true);
+                          const url = await handleImageUpload(file);
+                          if (url) {
+                            setDropData({...dropData, image_url: url});
+                            updatePiece(0, 'image_url', url);
+                          }
+                          setIsLoading(false);
+                        }
                       }}
-                    />
+                      onClick={() => {
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = 'image/*';
+                        input.onchange = async (e: any) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            setIsLoading(true);
+                            const url = await handleImageUpload(file);
+                            if (url) {
+                              setDropData({...dropData, image_url: url});
+                              updatePiece(0, 'image_url', url);
+                            }
+                            setIsLoading(false);
+                          }
+                        };
+                        input.click();
+                      }}
+                    >
+                      {dropData.image_url ? (
+                        <div className="flex items-center gap-2">
+                          <img src={dropData.image_url} alt="Preview" className="h-10 w-10 object-cover rounded" />
+                          <span className="text-xs truncate max-w-[150px]">{dropData.image_url}</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-1">
+                          <Upload className="h-5 w-5 text-muted-foreground" />
+                          <span className="text-xs text-muted-foreground">Arraste ou clique para enviar imagem</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -1186,16 +1258,58 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>URL da imagem/foto</Label>
-                  <Input 
-                    placeholder="https://..." 
-                    value={pieces[0].image_url}
-                    onChange={e => {
-                      updatePiece(0, 'image_url', e.target.value);
-                      setDropData({...dropData, image_url: e.target.value, source: 'manual'});
-                      updatePiece(0, 'source', 'manual');
+                  <Label>Imagem da peça</Label>
+                  <div 
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-3 transition-colors text-center cursor-pointer min-h-[60px] flex items-center justify-center",
+                      "hover:bg-accent/50 hover:border-primary",
+                      pieces[0].image_url ? "border-primary/50" : "border-muted-foreground/30"
+                    )}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('image/')) {
+                        setIsLoading(true);
+                        const url = await handleImageUpload(file);
+                        if (url) {
+                          updatePiece(0, 'image_url', url);
+                          setDropData({...dropData, image_url: url, source: 'manual'});
+                        }
+                        setIsLoading(false);
+                      }
                     }}
-                  />
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = async (e: any) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setIsLoading(true);
+                          const url = await handleImageUpload(file);
+                          if (url) {
+                            updatePiece(0, 'image_url', url);
+                            setDropData({...dropData, image_url: url, source: 'manual'});
+                          }
+                          setIsLoading(false);
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    {pieces[0].image_url ? (
+                      <div className="flex items-center gap-2">
+                        <img src={pieces[0].image_url} alt="Preview" className="h-10 w-10 object-cover rounded" />
+                        <span className="text-xs truncate max-w-[150px]">{pieces[0].image_url}</span>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1">
+                        <Upload className="h-5 w-5 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">Arraste ou clique para enviar imagem</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Disponível como</Label>
@@ -1344,14 +1458,58 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                       <Input value={pieces[0].makerworld_url} readOnly className="bg-muted/50" />
                     </div>
                     <div className="space-y-2">
-                      <Label>URL da imagem</Label>
-                      <Input 
-                        value={dropData.image_url}
-                        onChange={e => {
-                          setDropData({...dropData, image_url: e.target.value});
-                          updatePiece(0, 'image_url', e.target.value);
+                      <Label>Imagem do modelo</Label>
+                      <div 
+                        className={cn(
+                          "border-2 border-dashed rounded-lg p-3 transition-colors text-center cursor-pointer min-h-[60px] flex items-center justify-center",
+                          "hover:bg-accent/50 hover:border-primary",
+                          dropData.image_url ? "border-primary/50" : "border-muted-foreground/30"
+                        )}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={async (e) => {
+                          e.preventDefault();
+                          const file = e.dataTransfer.files[0];
+                          if (file && file.type.startsWith('image/')) {
+                            setIsLoading(true);
+                            const url = await handleImageUpload(file);
+                            if (url) {
+                              setDropData({...dropData, image_url: url});
+                              updatePiece(0, 'image_url', url);
+                            }
+                            setIsLoading(false);
+                          }
                         }}
-                      />
+                        onClick={() => {
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.accept = 'image/*';
+                          input.onchange = async (e: any) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              setIsLoading(true);
+                              const url = await handleImageUpload(file);
+                              if (url) {
+                                setDropData({...dropData, image_url: url});
+                                updatePiece(0, 'image_url', url);
+                              }
+                              setIsLoading(false);
+                            }
+                          };
+                          input.click();
+                        }}
+                      >
+                        {dropData.image_url ? (
+                          <div className="flex items-center gap-2">
+                            <img src={dropData.image_url} alt="Preview" className="h-10 w-10 object-cover rounded" />
+                            <span className="text-xs truncate max-w-[150px]">{dropData.image_url}</span>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center gap-1">
+                            <Upload className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-xs text-muted-foreground">Arraste ou clique para enviar imagem</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -1453,13 +1611,58 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="drop-img">URL da imagem</Label>
-                  <Input 
-                    id="drop-img" 
-                    placeholder="https://..." 
-                    value={dropData.image_url}
-                    onChange={e => setDropData({...dropData, image_url: e.target.value})}
-                  />
+                  <Label htmlFor="drop-img">Imagem de capa do drop</Label>
+                  <div 
+                    className={cn(
+                      "border-2 border-dashed rounded-lg p-4 transition-colors text-center cursor-pointer flex flex-col items-center justify-center gap-2",
+                      "hover:bg-accent/50 hover:border-primary",
+                      dropData.image_url ? "border-primary/50" : "border-muted-foreground/30"
+                    )}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={async (e) => {
+                      e.preventDefault();
+                      const file = e.dataTransfer.files[0];
+                      if (file && file.type.startsWith('image/')) {
+                        setIsLoading(true);
+                        const url = await handleImageUpload(file);
+                        if (url) setDropData({...dropData, image_url: url});
+                        setIsLoading(false);
+                      }
+                    }}
+                    onClick={() => {
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.onchange = async (e: any) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          setIsLoading(true);
+                          const url = await handleImageUpload(file);
+                          if (url) setDropData({...dropData, image_url: url});
+                          setIsLoading(false);
+                        }
+                      };
+                      input.click();
+                    }}
+                  >
+                    {dropData.image_url ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <img src={dropData.image_url} alt="Preview" className="max-h-32 rounded shadow-sm" />
+                        <span className="text-xs text-muted-foreground truncate max-w-[200px]">{dropData.image_url}</span>
+                        <Button variant="outline" size="sm" className="h-7 text-[10px]">Alterar imagem</Button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-2 py-4">
+                        <div className="p-3 rounded-full bg-primary/10">
+                          <ImageIcon className="h-6 w-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">Arraste a imagem de capa aqui</p>
+                          <p className="text-xs text-muted-foreground">ou clique para selecionar do computador</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="drop-link">Link STLFLIX</Label>
@@ -1506,12 +1709,52 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-xs">URL Imagem</Label>
-                          <Input 
-                            placeholder="https://..." 
-                            value={piece.image_url}
-                            onChange={e => updatePiece(index, 'image_url', e.target.value)}
-                          />
+                          <Label className="text-xs">Imagem da peça</Label>
+                          <div 
+                            className={cn(
+                              "border-2 border-dashed rounded-lg p-2 transition-colors text-center cursor-pointer",
+                              "hover:bg-accent/50 hover:border-primary",
+                              piece.image_url ? "border-primary/50" : "border-muted-foreground/30"
+                            )}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={async (e) => {
+                              e.preventDefault();
+                              const file = e.dataTransfer.files[0];
+                              if (file && file.type.startsWith('image/')) {
+                                setIsLoading(true);
+                                const url = await handleImageUpload(file);
+                                if (url) updatePiece(index, 'image_url', url);
+                                setIsLoading(false);
+                              }
+                            }}
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.onchange = async (e: any) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  setIsLoading(true);
+                                  const url = await handleImageUpload(file);
+                                  if (url) updatePiece(index, 'image_url', url);
+                                  setIsLoading(false);
+                                }
+                              };
+                              input.click();
+                            }}
+                          >
+                            {piece.image_url ? (
+                              <div className="flex items-center gap-2">
+                                <img src={piece.image_url} alt="Preview" className="h-10 w-10 object-cover rounded" />
+                                <span className="text-[10px] truncate max-w-[100px]">{piece.image_url}</span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center gap-1 py-1">
+                                <Upload className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-[10px] text-muted-foreground">Arraste ou clique</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label className="text-xs">Link STLFLIX</Label>
