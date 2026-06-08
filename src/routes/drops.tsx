@@ -347,9 +347,10 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
               <div className="w-full sm:w-48 h-32 relative overflow-hidden rounded-t-xl sm:rounded-l-xl sm:rounded-tr-none">
                 {drop.drop_image_url ? (
                   <img 
-                    src={drop.drop_image_url} 
+                    src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
                     alt={drop.drop_name} 
                     className="object-cover w-full h-full"
+                    crossOrigin="anonymous"
                     referrerPolicy="no-referrer"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = "";
