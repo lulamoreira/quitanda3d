@@ -1531,12 +1531,52 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-xs">URL Imagem</Label>
-                          <Input 
-                            placeholder="https://..." 
-                            value={piece.image_url}
-                            onChange={e => updatePiece(index, 'image_url', e.target.value)}
-                          />
+                          <Label className="text-xs">Imagem da peça</Label>
+                          <div 
+                            className={cn(
+                              "border-2 border-dashed rounded-lg p-2 transition-colors text-center cursor-pointer",
+                              "hover:bg-accent/50 hover:border-primary",
+                              piece.image_url ? "border-primary/50" : "border-muted-foreground/30"
+                            )}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={async (e) => {
+                              e.preventDefault();
+                              const file = e.dataTransfer.files[0];
+                              if (file && file.type.startsWith('image/')) {
+                                setIsLoading(true);
+                                const url = await handleImageUpload(file);
+                                if (url) updatePiece(index, 'image_url', url);
+                                setIsLoading(false);
+                              }
+                            }}
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.onchange = async (e: any) => {
+                                const file = e.target.files[0];
+                                if (file) {
+                                  setIsLoading(true);
+                                  const url = await handleImageUpload(file);
+                                  if (url) updatePiece(index, 'image_url', url);
+                                  setIsLoading(false);
+                                }
+                              };
+                              input.click();
+                            }}
+                          >
+                            {piece.image_url ? (
+                              <div className="flex items-center gap-2">
+                                <img src={piece.image_url} alt="Preview" className="h-10 w-10 object-cover rounded" />
+                                <span className="text-[10px] truncate max-w-[100px]">{piece.image_url}</span>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center gap-1 py-1">
+                                <Upload className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-[10px] text-muted-foreground">Arraste ou clique</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         <div className="space-y-2">
                           <Label className="text-xs">Link STLFLIX</Label>
