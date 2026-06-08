@@ -224,8 +224,8 @@ export default function DropsPage() {
           </Tabs>
         </div>
 
-        {/* Desktop Layout */}
-        <div className="hidden lg:flex flex-col gap-8 items-start">
+        {/* Desktop Layout */ injection: drops, isLoadingDrops, isErrorDrops, errorDrops, pieces, isLoadingPieces, isErrorPieces, errorPieces }
+        <div className="hidden lg:flex flex-col gap-8 items-start w-full">
           <section className="space-y-4 w-full">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-xl font-semibold">Lista de Drops</h2>
@@ -242,26 +242,13 @@ export default function DropsPage() {
                 setIsCreateDialogOpen(true);
               }}
               onDelete={(drop: any) => setDropToDelete(drop)}
+              // New props for integrated pieces view
+              pieces={pieces}
+              isLoadingPieces={isLoadingPieces}
+              isErrorPieces={isErrorPieces}
+              errorPieces={errorPieces}
             />
           </section>
-
-          {selectedDropId && (
-            <section className="space-y-4 w-full animate-in fade-in slide-in-from-top-4 duration-500">
-              <div className="flex items-center justify-between px-1 border-t pt-8">
-                <h2 className="text-2xl font-bold px-1">Peças do Lançamento</h2>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedDropId(null)}>
-                  Fechar peças
-                </Button>
-              </div>
-              <PiecesList 
-                pieces={pieces} 
-                isLoading={isLoadingPieces} 
-                isError={isErrorPieces}
-                error={errorPieces}
-                dropId={selectedDropId} 
-              />
-            </section>
-          )}
         </div>
       </div>
 
