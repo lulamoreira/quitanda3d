@@ -555,18 +555,20 @@ function PieceCard({ piece, index }: any) {
         <div className="flex items-start gap-4">
           <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
             {piece.image_url && piece.image_valid !== false ? (
-              <img 
-                src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
-                alt={piece.name} 
-                className="object-cover w-full h-full" 
-                crossOrigin="anonymous" 
-                referrerPolicy="no-referrer" 
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = "";
-                  (e.target as HTMLImageElement).onerror = null;
-                  (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-4 w-4 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[8px] text-destructive\">OFF</span></div>';
-                }}
-              />
+              <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
+                <img 
+                  src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
+                  alt={piece.name} 
+                  className="object-contain w-full h-full transition-transform hover:scale-110" 
+                  crossOrigin="anonymous" 
+                  referrerPolicy="no-referrer" 
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "";
+                    (e.target as HTMLImageElement).onerror = null;
+                    (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-4 w-4 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[8px] text-destructive\">OFF</span></div>';
+                  }}
+                />
+              </div>
             ) : (
               <div className="w-full h-full bg-muted flex flex-col items-center justify-center">
                 <Package className="h-6 w-6 text-muted-foreground opacity-20" />
