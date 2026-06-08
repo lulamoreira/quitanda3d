@@ -225,7 +225,7 @@ export default function DropsPage() {
         </div>
 
         {/* Desktop Layout */}
-        <div className="hidden lg:flex flex-col gap-8 items-start">
+        <div className="hidden lg:flex flex-col gap-8 items-start w-full">
           <section className="space-y-4 w-full">
             <div className="flex items-center justify-between px-1">
               <h2 className="text-xl font-semibold">Lista de Drops</h2>
@@ -242,26 +242,13 @@ export default function DropsPage() {
                 setIsCreateDialogOpen(true);
               }}
               onDelete={(drop: any) => setDropToDelete(drop)}
+              // New props for integrated pieces view
+              pieces={pieces}
+              isLoadingPieces={isLoadingPieces}
+              isErrorPieces={isErrorPieces}
+              errorPieces={errorPieces}
             />
           </section>
-
-          {selectedDropId && (
-            <section className="space-y-4 w-full animate-in fade-in slide-in-from-top-4 duration-500">
-              <div className="flex items-center justify-between px-1 border-t pt-8">
-                <h2 className="text-2xl font-bold px-1">Peças do Lançamento</h2>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedDropId(null)}>
-                  Fechar peças
-                </Button>
-              </div>
-              <PiecesList 
-                pieces={pieces} 
-                isLoading={isLoadingPieces} 
-                isError={isErrorPieces}
-                error={errorPieces}
-                dropId={selectedDropId} 
-              />
-            </section>
-          )}
         </div>
       </div>
 
@@ -285,12 +272,25 @@ export default function DropsPage() {
   );
 }
 
-function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onEdit, onDelete }: any) {
+function DropsList({ 
+  drops, 
+  isLoading, 
+  isError, 
+  error, 
+  selectedId, 
+  onSelect, 
+  onEdit, 
+  onDelete,
+  pieces,
+  isLoadingPieces,
+  isErrorPieces,
+  errorPieces
+}: any) {
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 w-full rounded-2xl" />
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <Skeleton key={i} className="h-64 w-full rounded-2xl" />
         ))}
       </div>
     );
@@ -324,7 +324,7 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-6">
       {drops.map((drop: any, index: number) => {
         const isSelected = selectedId === drop.id;
         const totalPieces = drop.pieces?.length || 0;
@@ -342,15 +342,15 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
         }
 
         return (
-          <Card 
-            key={drop.id}
-            className={cn(
-              "cursor-pointer transition-all hover:shadow-md border-2 animate-fade-slide-up",
-              isSelected ? "border-primary ring-1 ring-primary/20" : "border-transparent"
-            )}
-            style={getStaggerDelay(index)}
-            onClick={() => onSelect(drop.id)}
-          >
+          <div key={drop.id} className={cn("contents")}>
+            <Card 
+              className={cn(
+                "cursor-pointer transition-all hover:shadow-md border-2 animate-fade-slide-up h-full flex flex-col",
+                isSelected ? "border-primary ring-1 ring-primary/20 bg-primary/5" : "border-transparent"
+              )}
+              style={getStaggerDelay(index)}
+              onClick={() => onSelect(isSelected ? null : drop.id)}
+            >
             <CardContent className="p-0 flex flex-col gap-0">
               <div className="w-full h-48 relative overflow-hidden rounded-t-xl">
                 {drop.drop_image_url && drop.image_valid !== false ? (
@@ -446,9 +446,29 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
               </div>
             </CardContent>
           </Card>
+          {isSelected && (
+            <div className="col-span-full mt-2 mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center justify-between mb-4 px-1 border-t pt-8">
+                <h2 className="text-2xl font-bold px-1">Peças do Lançamento</h2>
+                <Button variant="ghost" size="sm" onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(null);
+                }}>
+                  Fechar peças
+                </Button>
+              </div>
+              <PiecesList 
+                pieces={pieces} 
+                isLoading={isLoadingPieces} 
+                isError={isErrorPieces}
+                error={errorPieces}
+                dropId={selectedId} 
+              />
+            </div>
+          )}
+          </div>
         );
       })}
-
     </div>
   );
 }
