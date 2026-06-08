@@ -133,9 +133,9 @@ serve(async (req) => {
       description = lines.join('\n').trim();
     }
 
-
-    // 6. INSERT DROP
+    // 7. INSERT DROP
     const { data: newDrop, error: insertDropError } = await supabase
+
       .from("drops")
       .insert({
         drop_name: dropName,
@@ -155,7 +155,7 @@ serve(async (req) => {
     const dropId = newDrop.id;
     let piecesCreated = 0;
 
-    // 7. INSERT PIECES
+    // 8. INSERT PIECES
     if (pieces.length > 0) {
       const piecesToInsert = pieces.map(p => ({
         drop_id: dropId,
