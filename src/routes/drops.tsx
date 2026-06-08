@@ -446,9 +446,29 @@ function DropsList({
               </div>
             </CardContent>
           </Card>
+          {isSelected && (
+            <div className="col-span-full mt-2 mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center justify-between mb-4 px-1 border-t pt-8">
+                <h2 className="text-2xl font-bold px-1">Peças do Lançamento</h2>
+                <Button variant="ghost" size="sm" onClick={(e) => {
+                  e.stopPropagation();
+                  onSelect(null);
+                }}>
+                  Fechar peças
+                </Button>
+              </div>
+              <PiecesList 
+                pieces={pieces} 
+                isLoading={isLoadingPieces} 
+                isError={isErrorPieces}
+                error={errorPieces}
+                dropId={selectedId} 
+              />
+            </div>
+          )}
+          </div>
         );
       })}
-
     </div>
   );
 }
