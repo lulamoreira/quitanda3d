@@ -584,9 +584,14 @@ function PieceCard({ piece, index }: any) {
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between gap-2">
-              <div className="space-y-1 min-w-0">
-                <h4 className="font-semibold truncate">{piece.name}</h4>
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1 flex-1 min-w-0">
+                <h4 
+                  className="font-bold text-lg leading-tight break-words cursor-pointer hover:text-primary transition-colors"
+                  onClick={() => setIsDetailsOpen(true)}
+                >
+                  {piece.name}
+                </h4>
                 <div className="flex flex-wrap items-center gap-2">
                   {piece.stlflix_code && (
                     <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted/80 h-5 px-1.5 text-[10px] gap-1 cursor-pointer" onClick={() => copyToClipboard(piece.stlflix_code)}>
