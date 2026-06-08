@@ -836,6 +836,25 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
 
 
+  const validateImageUrl = async (url: string): Promise<boolean> => {
+    if (!url) return false;
+    try {
+      // Usar proxy ou apenas tentar HEAD se CORS permitir
+      // Como estamos no navegador, HEAD pode falhar por CORS
+      // Uma alternativa é apenas tentar carregar como imagem
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        // Timeout de 5s
+        setTimeout(() => resolve(false), 5000);
+      });
+    } catch (error) {
+      return false;
+    }
+  };
+
   const handleSave = async () => {
     if (!dropData.name) {
       toast.error("O nome do drop é obrigatório");
@@ -844,6 +863,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
 
     setIsLoading(true);
     try {
+      const isDropImageValid = dropData.image_url ? await validateImageUrl(dropData.image_url) : true;
+
       if (editingDrop) {
         // UPDATE
         const { error } = await supabase
@@ -852,7 +873,8 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             drop_name: dropData.name,
             description: dropData.description,
             drop_image_url: dropData.image_url,
-            drop_link: dropData.link
+            drop_link: dropData.link,
+            image_valid: isDropImageValid
           })
           .eq('id', editingDrop.id);
 
@@ -868,42 +890,47 @@ function CreateDropDialog({ isOpen, onOpenChange, editingDrop = null }: any) {
             description: dropData.description,
             drop_image_url: dropData.image_url,
             drop_link: dropData.link,
-            source: dropData.source || pieces[0]?.source || 'manual'
+            source: dropData.source || pieces[0]?.source || 'manual',
+            image_valid: isDropImageValid
           })
           .select()
           .single();
 
         if (dropError) throw dropError;
 
-        // 2. Inserir Peças
-        const validPieces = pieces
+        // 2. Inserir Peças com validação de imagem
+        const processedPieces = await Promise.all(pieces
           .filter(p => p.name.trim() !== "")
-          .map(p => ({
-            name: p.name,
-            image_url: p.image_url,
-            piece_url: p.piece_url,
-            available_as: p.available_as,
-            drop_id: drop.id,
-            full_description: p.full_description,
-            stlflix_code: p.stlflix_code,
-            stlflix_slug: p.stlflix_slug,
-          stlflix_url: p.piece_url,
-          print_time_mono: p.print_time_mono,
-          print_time_multi: p.print_time_multi,
-          height_cm: p.height_cm,
-          source: p.source || 'manual',
-          drive_url: p.drive_url,
-          material: p.material,
-          print_notes: p.print_notes,
-          print_time_estimated: p.print_time_estimated,
-          makerworld_url: p.makerworld_url,
-          makerworld_model_id: p.makerworld_model_id
-        }));
+          .map(async p => {
+            const isPieceImageValid = p.image_url ? await validateImageUrl(p.image_url) : true;
+            return {
+              name: p.name,
+              image_url: p.image_url,
+              piece_url: p.piece_url,
+              available_as: p.available_as,
+              drop_id: drop.id,
+              full_description: p.full_description,
+              stlflix_code: p.stlflix_code,
+              stlflix_slug: p.stlflix_slug,
+              stlflix_url: p.piece_url,
+              print_time_mono: p.print_time_mono,
+              print_time_multi: p.print_time_multi,
+              height_cm: p.height_cm,
+              source: p.source || 'manual',
+              drive_url: p.drive_url,
+              material: p.material,
+              print_notes: p.print_notes,
+              print_time_estimated: p.print_time_estimated,
+              makerworld_url: p.makerworld_url,
+              makerworld_model_id: p.makerworld_model_id,
+              image_valid: isPieceImageValid
+            };
+          }));
 
-        if (validPieces.length > 0) {
+        if (processedPieces.length > 0) {
           const { error: piecesError } = await supabase
             .from('pieces')
-            .insert(validPieces);
+            .insert(processedPieces);
           if (piecesError) throw piecesError;
         }
 
