@@ -56,6 +56,7 @@ export type Database = {
           drop_link: string | null
           drop_name: string
           id: string
+          image_valid: boolean | null
           source: string | null
         }
         Insert: {
@@ -66,6 +67,7 @@ export type Database = {
           drop_link?: string | null
           drop_name: string
           id?: string
+          image_valid?: boolean | null
           source?: string | null
         }
         Update: {
@@ -76,6 +78,7 @@ export type Database = {
           drop_link?: string | null
           drop_name?: string
           id?: string
+          image_valid?: boolean | null
           source?: string | null
         }
         Relationships: []
@@ -145,6 +148,7 @@ export type Database = {
           height_cm: string | null
           id: string
           image_url: string | null
+          image_valid: boolean | null
           makerworld_model_id: string | null
           makerworld_url: string | null
           material: string | null
@@ -174,6 +178,7 @@ export type Database = {
           height_cm?: string | null
           id?: string
           image_url?: string | null
+          image_valid?: boolean | null
           makerworld_model_id?: string | null
           makerworld_url?: string | null
           material?: string | null
@@ -203,6 +208,7 @@ export type Database = {
           height_cm?: string | null
           id?: string
           image_url?: string | null
+          image_valid?: boolean | null
           makerworld_model_id?: string | null
           makerworld_url?: string | null
           material?: string | null

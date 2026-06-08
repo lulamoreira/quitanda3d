@@ -1,0 +1,2 @@
+ALTER TABLE public.drops ADD COLUMN IF NOT EXISTS image_valid BOOLEAN DEFAULT true;
+ALTER TABLE public.pieces ADD COLUMN IF NOT EXISTS image_valid BOOLEAN DEFAULT true;
