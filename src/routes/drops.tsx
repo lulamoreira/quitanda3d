@@ -424,11 +424,13 @@ function DropsList({
                       // Check if there are pieces and update the first one's image if it doesn't have one
                       // or if it was imported as a single piece
                       if (drop.pieces && drop.pieces.length > 0) {
-                        const firstPiece = drop.pieces[0];
+                        // Update all pieces if it's a drag-and-drop on the drop card
+                        // to ensure the image is updated everywhere
+                        const pieceIds = drop.pieces.map((p: any) => p.id);
                         await supabase
                           .from('pieces')
-                          .update({ image_url: url, image_valid: isImageValid })
-                          .eq('id', firstPiece.id);
+                          .update({ image_url: url, image_valid: true })
+                          .in('id', pieceIds);
                       }
 
                       toast.success("✓ Imagem do drop atualizada");
@@ -441,7 +443,7 @@ function DropsList({
             >
             <CardContent className="p-0 flex flex-col gap-0">
               <div className="w-full h-48 relative overflow-hidden rounded-t-xl">
-                {drop.drop_image_url && drop.image_valid !== false ? (
+                {drop.drop_image_url && (drop.image_valid !== false || drop.drop_image_url.includes('supabase.co') || drop.drop_image_url.startsWith('blob:')) ? (
                   <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
                     <img 
                       src={drop.drop_image_url.includes('stlflix.b-cdn.net') ? drop.drop_image_url + '?not-from-canvas-or-whatever' : drop.drop_image_url} 
@@ -747,13 +749,14 @@ function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
                   .eq('id', piece.drop_id)
                   .single();
 
-                if (!currentDrop?.drop_image_url || currentDrop.drop_image_url === "") {
-                  await supabase
-                    .from('drops')
-                    .update({ drop_image_url: url, image_valid: isImageValid })
-                    .eq('id', piece.drop_id);
-                  queryClient.invalidateQueries({ queryKey: ["drops"] });
-                }
+                // ALWAYS update the drop image when a piece image is updated via drag-and-drop
+                // The uploaded image takes priority over any previous link
+                await supabase
+                  .from('drops')
+                  .update({ drop_image_url: url, image_valid: true })
+                  .eq('id', piece.drop_id);
+                
+                queryClient.invalidateQueries({ queryKey: ["drops"] });
 
                 toast.success("✓ Imagem da peça atualizada");
                 queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
@@ -765,7 +768,7 @@ function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
-              {piece.image_url && piece.image_valid !== false ? (
+              {piece.image_url && (piece.image_valid !== false || piece.image_url.includes('supabase.co') || piece.image_url.startsWith('blob:')) ? (
                 <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
                   <img 
                     src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
