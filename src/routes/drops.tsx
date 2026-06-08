@@ -323,6 +323,51 @@ function DropsList({
     );
   }
 
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('drop-assets')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('drop-assets')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(`Erro ao fazer upload: ${error.message}`);
+      return null;
+    }
+  };
+
+  const validateImageUrl = async (url: string): Promise<boolean> => {
+    if (!url) return false;
+    if (url.includes('supabase.co')) return true;
+    try {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        setTimeout(() => resolve(false), 5000);
+      });
+    } catch (error) {
+      return false;
+    }
+  };
+
+  const queryClient = useQueryClient();
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-4 gap-y-6">
       {drops.map((drop: any, index: number) => {
@@ -350,6 +395,31 @@ function DropsList({
               )}
               style={getStaggerDelay(index)}
               onClick={() => onSelect(isSelected ? null : drop.id)}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onDrop={async (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                  const url = await handleImageUpload(file);
+                  if (url) {
+                    const isImageValid = await validateImageUrl(url);
+                    const { error } = await supabase
+                      .from('drops')
+                      .update({ drop_image_url: url, image_valid: isImageValid })
+                      .eq('id', drop.id);
+                    if (error) {
+                      toast.error("Erro ao atualizar imagem do drop");
+                    } else {
+                      toast.success("✓ Imagem do drop atualizada");
+                      queryClient.invalidateQueries({ queryKey: ["drops"] });
+                    }
+                  }
+                }
+              }}
             >
             <CardContent className="p-0 flex flex-col gap-0">
               <div className="w-full h-48 relative overflow-hidden rounded-t-xl">
@@ -474,6 +544,50 @@ function DropsList({
 }
 
 function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
+  const queryClient = useQueryClient();
+
+  const handleImageUpload = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error } = await supabase.storage
+        .from('drop-assets')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('drop-assets')
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      toast.error(`Erro ao fazer upload: ${error.message}`);
+      return null;
+    }
+  };
+
+  const validateImageUrl = async (url: string): Promise<boolean> => {
+    if (!url) return false;
+    if (url.includes('supabase.co')) return true;
+    try {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(true);
+        img.onerror = () => resolve(false);
+        img.src = url;
+        setTimeout(() => resolve(false), 5000);
+      });
+    } catch (error) {
+      return false;
+    }
+  };
   if (!dropId) {
     return (
       <Card className="border-dashed py-24 flex flex-col items-center justify-center text-center space-y-4">
@@ -528,14 +642,20 @@ function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
   return (
     <div className="space-y-4">
       {pieces?.map((piece: any, index: number) => (
-        <PieceCard key={piece.id} piece={piece} index={index} />
+        <PieceCard 
+          key={piece.id} 
+          piece={piece} 
+          index={index} 
+          handleImageUpload={handleImageUpload}
+          validateImageUrl={validateImageUrl}
+        />
       ))}
     </div>
 
   );
 }
 
-function PieceCard({ piece, index }: any) {
+function PieceCard({ piece, index, handleImageUpload, validateImageUrl }: any) {
   const [isSelling, setIsSelling] = useState(piece.active || false);
   const [availableAs, setAvailableAs] = useState(piece.available_as || 'ambos');
   const [priceFigura, setPriceFigura] = useState(piece.price_figura || "");
@@ -578,7 +698,35 @@ function PieceCard({ piece, index }: any) {
 
   return (
     <>
-      <Card className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" style={getStaggerDelay(index)}>
+      <Card 
+        className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" 
+        style={getStaggerDelay(index)}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        onDrop={async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const file = e.dataTransfer.files[0];
+          if (file && file.type.startsWith('image/')) {
+            const url = await handleImageUpload(file);
+            if (url) {
+              const isImageValid = await validateImageUrl(url);
+              const { error } = await supabase
+                .from('pieces')
+                .update({ image_url: url, image_valid: isImageValid })
+                .eq('id', piece.id);
+              if (error) {
+                toast.error("Erro ao atualizar imagem da peça");
+              } else {
+                toast.success("✓ Imagem da peça atualizada");
+                queryClient.invalidateQueries({ queryKey: ["pieces", piece.drop_id] });
+              }
+            }
+          }
+        }}
+      >
         <CardContent className="p-4">
           <div className="flex items-start gap-4">
             <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
