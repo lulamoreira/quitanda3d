@@ -642,7 +642,13 @@ function PiecesList({ pieces, isLoading, isError, error, dropId }: any) {
   return (
     <div className="space-y-4">
       {pieces?.map((piece: any, index: number) => (
-        <PieceCard key={piece.id} piece={piece} index={index} />
+        <PieceCard 
+          key={piece.id} 
+          piece={piece} 
+          index={index} 
+          handleImageUpload={handleImageUpload}
+          validateImageUrl={validateImageUrl}
+        />
       ))}
     </div>
 
