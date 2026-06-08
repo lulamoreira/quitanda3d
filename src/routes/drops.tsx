@@ -224,7 +224,7 @@ export default function DropsPage() {
           </Tabs>
         </div>
 
-        {/* Desktop Layout */ injection: drops, isLoadingDrops, isErrorDrops, errorDrops, pieces, isLoadingPieces, isErrorPieces, errorPieces }
+        {/* Desktop Layout */}
         <div className="hidden lg:flex flex-col gap-8 items-start w-full">
           <section className="space-y-4 w-full">
             <div className="flex items-center justify-between px-1">
