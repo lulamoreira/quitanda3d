@@ -324,7 +324,7 @@ function DropsList({ drops, isLoading, isError, error, selectedId, onSelect, onE
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {drops.map((drop: any, index: number) => {
         const isSelected = selectedId === drop.id;
         const totalPieces = drop.pieces?.length || 0;
