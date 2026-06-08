@@ -557,316 +557,318 @@ function PieceCard({ piece, index }: any) {
   };
 
   return (
-    <Card className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" style={getStaggerDelay(index)}>
-      <CardContent className="p-4">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
-            {piece.image_url && piece.image_valid !== false ? (
-              <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
-                <img 
-                  src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
-                  alt={piece.name} 
-                  className="object-contain w-full h-full transition-transform hover:scale-110" 
-                  crossOrigin="anonymous" 
-                  referrerPolicy="no-referrer" 
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "";
-                    (e.target as HTMLImageElement).onerror = null;
-                    (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-4 w-4 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[8px] text-destructive\">OFF</span></div>';
-                  }}
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full bg-muted flex flex-col items-center justify-center">
-                <Package className="h-6 w-6 text-muted-foreground opacity-20" />
-                {piece.image_valid === false && <span className="text-[8px] text-destructive font-bold uppercase">Erro</span>}
-              </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1 flex-1 min-w-0">
-                <h4 
-                  className="font-bold text-lg leading-tight break-words cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => setIsDetailsOpen(true)}
-                >
-                  {piece.name}
-                </h4>
-                <div className="flex flex-wrap items-center gap-2">
-                  {piece.stlflix_code && (
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted/80 h-5 px-1.5 text-[10px] gap-1 cursor-pointer" onClick={() => copyToClipboard(piece.stlflix_code)}>
-                      {piece.stlflix_code}
-                      <Copy className="h-2.5 w-2.5" />
-                    </Badge>
-                  )}
-                  {piece.material && (
-                    <Badge variant="secondary" className="bg-muted text-muted-foreground h-5 px-1.5 text-[10px]">
-                      {piece.material}
-                    </Badge>
-                  )}
-                  {piece.print_time_mono && (
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-2.5 w-2.5" />
-                      Mono: {piece.print_time_mono}
-                    </span>
-                  )}
-                  {piece.print_time_estimated && (
-                    <span className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-2.5 w-2.5" />
-                      ~{piece.print_time_estimated}
-                    </span>
-                  )}
+    <>
+      <Card className="overflow-hidden animate-fade-slide-up hover:shadow-md transition-shadow" style={getStaggerDelay(index)}>
+        <CardContent className="p-4">
+          <div className="flex items-start gap-4">
+            <div className="w-16 h-16 shrink-0 relative overflow-hidden rounded-lg">
+              {piece.image_url && piece.image_valid !== false ? (
+                <div className="w-full h-full flex items-center justify-center bg-black overflow-hidden">
+                  <img 
+                    src={piece.image_url.includes('stlflix.b-cdn.net') ? piece.image_url + '?not-from-canvas-or-whatever' : piece.image_url} 
+                    alt={piece.name} 
+                    className="object-contain w-full h-full transition-transform hover:scale-110" 
+                    crossOrigin="anonymous" 
+                    referrerPolicy="no-referrer" 
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "";
+                      (e.target as HTMLImageElement).onerror = null;
+                      (e.target as HTMLImageElement).parentElement!.innerHTML = '<div class="w-full h-full bg-muted flex items-center justify-center flex-col"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-package h-4 w-4 text-muted-foreground opacity-20"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z\"/><path d=\"m3.3 7 8.7 5 8.7-5\"/><path d=\"M12 22V12\"/></svg><span class=\"text-[8px] text-destructive\">OFF</span></div>';
+                    }}
+                  />
                 </div>
-                {piece.print_notes && (
-                  <div className="mt-1">
-                    <button 
-                      onClick={() => setIsNotesExpanded(!isNotesExpanded)}
-                      className="text-[10px] text-primary flex items-center gap-1 hover:underline"
-                    >
-                      <ChevronDown className={cn("h-2.5 w-2.5 transition-transform", isNotesExpanded && "rotate-180")} />
-                      {isNotesExpanded ? "Ocultar obs." : "Ver obs."}
-                    </button>
-                    {isNotesExpanded && (
-                      <p className="text-[10px] text-muted-foreground mt-1 bg-muted/30 p-1.5 rounded border border-dashed">
-                        {piece.print_notes}
-                      </p>
-                    )}
-                  </div>
-                )}
-                
-                <div className="mt-2 space-y-1">
-                  {piece.stlflix_url && (
-                    <a 
-                      href={piece.stlflix_url} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="text-[11px] text-orange-600 hover:text-orange-700 flex items-center gap-1.5 transition-colors font-medium"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Abrir na STLFLIX
-                    </a>
-                  )}
-                  {piece.makerworld_url && (
-                    <a 
-                      href={piece.makerworld_url} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="text-[11px] text-green-600 hover:text-green-700 flex items-center gap-1.5 transition-colors font-medium"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Abrir no MakerWorld
-                    </a>
-                  )}
-                  {piece.drive_url && (
-                    <a 
-                      href={piece.drive_url} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="text-[11px] text-gray-600 hover:text-gray-700 flex items-center gap-1.5 transition-colors font-medium"
-                    >
-                      <HardDrive className="h-3 w-3" />
-                      Arquivo para impressão
-                    </a>
-                  )}
+              ) : (
+                <div className="w-full h-full bg-muted flex flex-col items-center justify-center">
+                  <Package className="h-6 w-6 text-muted-foreground opacity-20" />
+                  {piece.image_valid === false && <span className="text-[8px] text-destructive font-bold uppercase">Erro</span>}
                 </div>
-              </div>
-              <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold shrink-0", statusColors[piece.status] || 'bg-muted')}>
-                {piece.status}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between mt-4">
-              <div className="flex items-center space-x-2">
-                <Switch 
-                  id={`sell-${piece.id}`} 
-                  checked={isSelling}
-                  onCheckedChange={handleToggle}
-                  className="data-[state=checked]:bg-primary"
-                />
-                <Label htmlFor={`sell-${piece.id}`} className="text-sm font-medium cursor-pointer">
-                  Vender esta peça
-                </Label>
-              </div>
-              {piece.piece_url && !piece.stlflix_url && (
-                <a href={piece.piece_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                  <ExternalLink className="h-4 w-4" />
-                </a>
               )}
             </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1 flex-1 min-w-0">
+                  <h4 
+                    className="font-bold text-lg leading-tight break-words cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => setIsDetailsOpen(true)}
+                  >
+                    {piece.name}
+                  </h4>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {piece.stlflix_code && (
+                      <Badge variant="secondary" className="bg-muted text-muted-foreground hover:bg-muted/80 h-5 px-1.5 text-[10px] gap-1 cursor-pointer" onClick={() => copyToClipboard(piece.stlflix_code)}>
+                        {piece.stlflix_code}
+                        <Copy className="h-2.5 w-2.5" />
+                      </Badge>
+                    )}
+                    {piece.material && (
+                      <Badge variant="secondary" className="bg-muted text-muted-foreground h-5 px-1.5 text-[10px]">
+                        {piece.material}
+                      </Badge>
+                    )}
+                    {piece.print_time_mono && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-2.5 w-2.5" />
+                        Mono: {piece.print_time_mono}
+                      </span>
+                    )}
+                    {piece.print_time_estimated && (
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <Clock className="h-2.5 w-2.5" />
+                        ~{piece.print_time_estimated}
+                      </span>
+                    )}
+                  </div>
+                  {piece.print_notes && (
+                    <div className="mt-1">
+                      <button 
+                        onClick={() => setIsNotesExpanded(!isNotesExpanded)}
+                        className="text-[10px] text-primary flex items-center gap-1 hover:underline"
+                      >
+                        <ChevronDown className={cn("h-2.5 w-2.5 transition-transform", isNotesExpanded && "rotate-180")} />
+                        {isNotesExpanded ? "Ocultar obs." : "Ver obs."}
+                      </button>
+                      {isNotesExpanded && (
+                        <p className="text-[10px] text-muted-foreground mt-1 bg-muted/30 p-1.5 rounded border border-dashed">
+                          {piece.print_notes}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="mt-2 space-y-1">
+                    {piece.stlflix_url && (
+                      <a 
+                        href={piece.stlflix_url} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-[11px] text-orange-600 hover:text-orange-700 flex items-center gap-1.5 transition-colors font-medium"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Abrir na STLFLIX
+                      </a>
+                    )}
+                    {piece.makerworld_url && (
+                      <a 
+                        href={piece.makerworld_url} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-[11px] text-green-600 hover:text-green-700 flex items-center gap-1.5 transition-colors font-medium"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Abrir no MakerWorld
+                      </a>
+                    )}
+                    {piece.drive_url && (
+                      <a 
+                        href={piece.drive_url} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-[11px] text-gray-600 hover:text-gray-700 flex items-center gap-1.5 transition-colors font-medium"
+                      >
+                        <HardDrive className="h-3 w-3" />
+                        Arquivo para impressão
+                      </a>
+                    )}
+                  </div>
+                </div>
+                <Badge variant="secondary" className={cn("text-[10px] uppercase font-bold shrink-0", statusColors[piece.status] || 'bg-muted')}>
+                  {piece.status}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between mt-4">
+                <div className="flex items-center space-x-2">
+                  <Switch 
+                    id={`sell-${piece.id}`} 
+                    checked={isSelling}
+                    onCheckedChange={handleToggle}
+                    className="data-[state=checked]:bg-primary"
+                  />
+                  <Label htmlFor={`sell-${piece.id}`} className="text-sm font-medium cursor-pointer">
+                    Vender esta peça
+                  </Label>
+                </div>
+                {piece.piece_url && !piece.stlflix_url && (
+                  <a href={piece.piece_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                    <ExternalLink className="h-4 w-4" />
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Expandable Panel */}
-        <div className={cn(
-          "grid transition-all duration-300 ease-in-out overflow-hidden",
-          isSelling ? "grid-rows-[1fr] mt-6 opacity-100 pt-6 border-t" : "grid-rows-[0fr] opacity-0"
-        )}>
-          <div className="min-h-0 space-y-4">
-            <div className="space-y-2">
-              <Label className="text-xs uppercase text-muted-foreground font-bold">Configuração de Venda</Label>
-              <Select value={availableAs} onValueChange={setAvailableAs}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Disponível como..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="figura">Apenas Figura</SelectItem>
-                  <SelectItem value="chaveiro">Apenas Chaveiro</SelectItem>
-                  <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
-                </SelectContent>
-              </Select>
+          {/* Expandable Panel */}
+          <div className={cn(
+            "grid transition-all duration-300 ease-in-out overflow-hidden",
+            isSelling ? "grid-rows-[1fr] mt-6 opacity-100 pt-6 border-t" : "grid-rows-[0fr] opacity-0"
+          )}>
+            <div className="min-h-0 space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs uppercase text-muted-foreground font-bold">Configuração de Venda</Label>
+                <Select value={availableAs} onValueChange={setAvailableAs}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Disponível como..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="figura">Apenas Figura</SelectItem>
+                    <SelectItem value="chaveiro">Apenas Chaveiro</SelectItem>
+                    <SelectItem value="ambos">Figura e Chaveiro</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                {(availableAs === 'figura' || availableAs === 'ambos') && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Preço Figura (R$)</Label>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">R$</span>
+                      <Input 
+                        className="pl-8 h-8 text-xs" 
+                        placeholder="0,00" 
+                        type="number"
+                        value={priceFigura}
+                        onChange={(e) => setPriceFigura(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+                {(availableAs === 'chaveiro' || availableAs === 'ambos') && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Preço Chaveiro (R$)</Label>
+                    <div className="relative">
+                      <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">R$</span>
+                      <Input 
+                        className="pl-8 h-8 text-xs" 
+                        placeholder="0,00" 
+                        type="number"
+                        value={priceChaveiro}
+                        onChange={(e) => setPriceChaveiro(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2">
+                <PriceCalculatorDialog 
+                  piece={piece} 
+                  onUsePrice={(p, type, grams, hours) => {
+                    if (type === 'ml') {
+                      if (availableAs === 'figura' || availableAs === 'ambos') setPriceFigura(p.toFixed(2));
+                      if (availableAs === 'chaveiro' || availableAs === 'ambos') setPriceChaveiro(p.toFixed(2));
+                    } else {
+                      if (availableAs === 'figura' || availableAs === 'ambos') setPriceFigura(p.toFixed(2));
+                      if (availableAs === 'chaveiro' || availableAs === 'ambos') setPriceChaveiro(p.toFixed(2));
+                    }
+                  }}
+                />
+                <PublicationDialog 
+                  piece={{ ...piece, price_figura: priceFigura, price_chaveiro: priceChaveiro, available_as: availableAs }} 
+                  disabled={!priceFigura && !priceChaveiro}
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <SheetContent className="sm:max-w-xl overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-2xl font-bold leading-tight">{piece.name}</SheetTitle>
+          </SheetHeader>
+          
+          <div className="space-y-8">
+            <div className="aspect-square w-full bg-black rounded-xl overflow-hidden border shadow-inner">
+              <img 
+                src={piece.image_url} 
+                alt={piece.name} 
+                className="w-full h-full object-contain"
+                crossOrigin="anonymous"
+                referrerPolicy="no-referrer"
+              />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {(availableAs === 'figura' || availableAs === 'ambos') && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Preço Figura (R$)</Label>
-                  <div className="relative">
-                    <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">R$</span>
-                    <Input 
-                      className="pl-8 h-8 text-xs" 
-                      placeholder="0,00" 
-                      type="number"
-                      value={priceFigura}
-                      onChange={(e) => setPriceFigura(e.target.value)}
-                    />
-                  </div>
+              <div className="p-4 rounded-xl bg-accent/30 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground">Status</span>
+                <div className="flex items-center gap-2">
+                  <div className={cn("h-2 w-2 rounded-full", piece.status === 'publicado' ? "bg-green-500" : "bg-gray-400")} />
+                  <span className="font-semibold capitalize">{piece.status}</span>
                 </div>
-              )}
-              {(availableAs === 'chaveiro' || availableAs === 'ambos') && (
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Preço Chaveiro (R$)</Label>
-                  <div className="relative">
-                    <span className="absolute left-2.5 top-2 text-xs text-muted-foreground">R$</span>
-                    <Input 
-                      className="pl-8 h-8 text-xs" 
-                      placeholder="0,00" 
-                      type="number"
-                      value={priceChaveiro}
-                      onChange={(e) => setPriceChaveiro(e.target.value)}
-                    />
-                  </div>
+              </div>
+              <div className="p-4 rounded-xl bg-accent/30 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-muted-foreground">Código STL</span>
+                <div className="font-mono font-bold">{piece.stlflix_code || "---"}</div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Descrição Detalhada</h5>
+              <div className="p-5 rounded-xl bg-muted/50 border text-sm leading-relaxed whitespace-pre-wrap">
+                {piece.full_description || "Nenhuma descrição detalhada disponível para esta peça."}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div className="space-y-3">
+                <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Especificações</h5>
+                <div className="space-y-2">
+                  {piece.material && (
+                    <div className="flex justify-between text-sm border-b pb-2">
+                      <span className="text-muted-foreground">Material</span>
+                      <span className="font-medium">{piece.material}</span>
+                    </div>
+                  )}
+                  {piece.height_cm && (
+                    <div className="flex justify-between text-sm border-b pb-2">
+                      <span className="text-muted-foreground">Altura</span>
+                      <span className="font-medium">{piece.height_cm}</span>
+                    </div>
+                  )}
+                  {piece.print_time_mono && (
+                    <div className="flex justify-between text-sm border-b pb-2">
+                      <span className="text-muted-foreground">Tempo Mono</span>
+                      <span className="font-medium">{piece.print_time_mono}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-
-            <div className="flex gap-2">
-              <PriceCalculatorDialog 
-                piece={piece} 
-                onUsePrice={(p, type, grams, hours) => {
-                  if (type === 'ml') {
-                    if (availableAs === 'figura' || availableAs === 'ambos') setPriceFigura(p.toFixed(2));
-                    if (availableAs === 'chaveiro' || availableAs === 'ambos') setPriceChaveiro(p.toFixed(2));
-                  } else {
-                    if (availableAs === 'figura' || availableAs === 'ambos') setPriceFigura(p.toFixed(2));
-                    if (availableAs === 'chaveiro' || availableAs === 'ambos') setPriceChaveiro(p.toFixed(2));
-                  }
-                }}
-              />
-              <PublicationDialog 
-                piece={{ ...piece, price_figura: priceFigura, price_chaveiro: priceChaveiro, available_as: availableAs }} 
-                disabled={!priceFigura && !priceChaveiro}
-              />
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-
-    <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-      <SheetContent className="sm:max-w-xl overflow-y-auto">
-        <SheetHeader className="mb-6">
-          <SheetTitle className="text-2xl font-bold leading-tight">{piece.name}</SheetTitle>
-        </SheetHeader>
-        
-        <div className="space-y-8">
-          <div className="aspect-square w-full bg-black rounded-xl overflow-hidden border shadow-inner">
-            <img 
-              src={piece.image_url} 
-              alt={piece.name} 
-              className="w-full h-full object-contain"
-              crossOrigin="anonymous"
-              referrerPolicy="no-referrer"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-accent/30 space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Status</span>
-              <div className="flex items-center gap-2">
-                <div className={cn("h-2 w-2 rounded-full", piece.status === 'publicado' ? "bg-green-500" : "bg-gray-400")} />
-                <span className="font-semibold capitalize">{piece.status}</span>
               </div>
-            </div>
-            <div className="p-4 rounded-xl bg-accent/30 space-y-1">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground">Código STL</span>
-              <div className="font-mono font-bold">{piece.stlflix_code || "---"}</div>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Descrição Detalhada</h5>
-            <div className="p-5 rounded-xl bg-muted/50 border text-sm leading-relaxed whitespace-pre-wrap">
-              {piece.full_description || "Nenhuma descrição detalhada disponível para esta peça."}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-3">
-              <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Especificações</h5>
-              <div className="space-y-2">
-                {piece.material && (
-                  <div className="flex justify-between text-sm border-b pb-2">
-                    <span className="text-muted-foreground">Material</span>
-                    <span className="font-medium">{piece.material}</span>
-                  </div>
-                )}
-                {piece.height_cm && (
-                  <div className="flex justify-between text-sm border-b pb-2">
-                    <span className="text-muted-foreground">Altura</span>
-                    <span className="font-medium">{piece.height_cm}</span>
-                  </div>
-                )}
-                {piece.print_time_mono && (
-                  <div className="flex justify-between text-sm border-b pb-2">
-                    <span className="text-muted-foreground">Tempo Mono</span>
-                    <span className="font-medium">{piece.print_time_mono}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            
-            <div className="space-y-3">
-              <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Links Úteis</h5>
-              <div className="flex flex-col gap-2">
-                {piece.stlflix_url && (
-                  <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
-                    <a href={piece.stlflix_url} target="_blank" rel="noreferrer">
-                      <ExternalLink className="h-4 w-4 text-orange-500" />
-                      STLFLIX
-                    </a>
-                  </Button>
-                )}
-                {piece.makerworld_url && (
-                  <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
-                    <a href={piece.makerworld_url} target="_blank" rel="noreferrer">
-                      <Globe className="h-4 w-4 text-green-500" />
-                      MakerWorld
-                    </a>
-                  </Button>
-                )}
-                {piece.drive_url && (
-                  <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
-                    <a href={piece.drive_url} target="_blank" rel="noreferrer">
-                      <HardDrive className="h-4 w-4 text-blue-500" />
-                      Arquivo Drive
-                    </a>
-                  </Button>
-                )}
+              
+              <div className="space-y-3">
+                <h5 className="font-bold text-sm uppercase tracking-wider text-muted-foreground">Links Úteis</h5>
+                <div className="flex flex-col gap-2">
+                  {piece.stlflix_url && (
+                    <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
+                      <a href={piece.stlflix_url} target="_blank" rel="noreferrer">
+                        <ExternalLink className="h-4 w-4 text-orange-500" />
+                        STLFLIX
+                      </a>
+                    </Button>
+                  )}
+                  {piece.makerworld_url && (
+                    <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
+                      <a href={piece.makerworld_url} target="_blank" rel="noreferrer">
+                        <Globe className="h-4 w-4 text-green-500" />
+                        MakerWorld
+                      </a>
+                    </Button>
+                  )}
+                  {piece.drive_url && (
+                    <Button variant="outline" size="sm" className="justify-start gap-2 h-9" asChild>
+                      <a href={piece.drive_url} target="_blank" rel="noreferrer">
+                        <HardDrive className="h-4 w-4 text-blue-500" />
+                        Arquivo Drive
+                      </a>
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        </SheetContent>
+      </Sheet>
+    </>
   );
 }
 
