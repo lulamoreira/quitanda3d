@@ -1,0 +1,4 @@
+UPDATE drops SET drop_image_url = 'https://stlflix.b-cdn.net/Coffee_Tower_Pod_Dispenser_thumb_29a32442c4.png' WHERE id = '88d7f123-f888-4437-be0e-579e3e814940';
+UPDATE pieces SET image_url = 'https://stlflix.b-cdn.net/Coffee_Tower_Pod_Dispenser_thumb_29a32442c4.png' WHERE stlflix_slug = 'coffee-tower-pod-dispenser' AND drop_id = '88d7f123-f888-4437-be0e-579e3e814940';
+UPDATE pieces SET image_url = 'https://stlflix.b-cdn.net/Coffee_Time_Letter_Board_thumb_3e3ba31db1.png' WHERE stlflix_slug = 'coffee-time-letter-board' AND drop_id = '88d7f123-f888-4437-be0e-579e3e814940';
+UPDATE pieces SET image_url = 'https://stlflix.b-cdn.net/Tea_Cascade_Tea_Bag_Dispenser_thumb_4946093dd3.png' WHERE stlflix_slug = 'tea-cascade-tea-bag-dispenser' AND drop_id = '88d7f123-f888-4437-be0e-579e3e814940';
